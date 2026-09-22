@@ -610,32 +610,30 @@ void SynthSlider::drawRotaryShadow(Graphics &g) {
     // left, the lower right falls away, and a rim highlight catches the top
     // edge. Every colour is derived from the skin's body colour, so reskinning
     // still drives the whole knob.
-    Colour body_light = body.brighter(0.85f);
-    Colour body_mid = body.brighter(0.18f);
-    Colour body_dark = body.darker(0.62f);
+    Colour body_light = body.brighter(1.25f);
+    Colour body_mid = body.brighter(0.42f);
+    Colour body_dark = body.darker(0.40f);
 
-    ColourGradient face(body_light, center_x - body_radius * 0.42f, center_y - body_radius * 0.52f,
-                        body_dark, center_x + body_radius * 0.55f, center_y + body_radius * 0.85f, true);
-    face.addColour(0.45, body_mid);
+    ColourGradient face(body_light, center_x - body_radius * 0.40f, center_y - body_radius * 0.55f,
+                        body_dark, center_x + body_radius * 0.50f, center_y + body_radius * 0.95f, true);
+    face.addColour(0.40, body_mid);
     g.setGradientFill(face);
     g.fillEllipse(ellipse);
 
-    // rim: bright along the top, dark along the bottom
-    ColourGradient rim(body.brighter(1.4f).withAlpha(0.85f), center_x, center_y - body_radius,
-                       body.darker(0.8f).withAlpha(0.9f), center_x, center_y + body_radius, false);
+    // rim: a bright catch along the top, easing off rather than going black at
+    // the bottom, which otherwise reads as a heavy outline
+    ColourGradient rim(body.brighter(2.1f).withAlpha(0.80f), center_x, center_y - body_radius,
+                       body.darker(0.30f).withAlpha(0.55f), center_x, center_y + body_radius, false);
+    rim.addColour(0.55, body.brighter(0.30f).withAlpha(0.45f));
     g.setGradientFill(rim);
-    g.drawEllipse(ellipse.reduced(0.5f), 1.0f);
-
-    // a tight inner shade keeps the face from looking flat at the edge
-    g.setColour(body.darker(0.45f).withAlpha(0.55f));
-    g.drawEllipse(ellipse.reduced(1.6f), 1.2f);
+    g.drawEllipse(ellipse.reduced(0.5f), 1.1f);
 
     // Tick marks outside the value ring. Skipped on the smallest knobs, where
     // they would only add noise.
     if (body_radius >= 11.0f) {
-      Colour tick_color = findColour(Skin::kRotaryArcUnselected, true).brighter(0.5f);
+      Colour tick_color = findColour(Skin::kRotaryArcUnselected, true).brighter(1.15f);
       float tick_inner = radius + stroke_width * 0.5f + 2.5f;
-      float tick_outer = tick_inner + (body_radius >= 16.0f ? 3.5f : 2.5f);
+      float tick_outer = tick_inner + (body_radius >= 16.0f ? 5.0f : 3.5f);
       int num_ticks = 11;
       for (int i = 0; i < num_ticks; ++i) {
         float t = i / (num_ticks - 1.0f);
@@ -643,10 +641,10 @@ void SynthSlider::drawRotaryShadow(Graphics &g) {
         bool major = (i == 0 || i == num_ticks - 1 || i == num_ticks / 2);
         float sin_a = std::sin(angle);
         float cos_a = std::cos(angle);
-        g.setColour(major ? tick_color.brighter(0.7f) : tick_color.withMultipliedAlpha(0.65f));
+        g.setColour(major ? tick_color.brighter(0.9f) : tick_color.withMultipliedAlpha(0.8f));
         g.drawLine(center_x + sin_a * tick_inner, center_y - cos_a * tick_inner,
                    center_x + sin_a * tick_outer, center_y - cos_a * tick_outer,
-                   major ? 1.6f : 1.0f);
+                   major ? 2.0f : 1.4f);
       }
     }
   }

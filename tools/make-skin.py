@@ -92,9 +92,9 @@ GLOBAL = {
     "Label Background": "ff1a1c1f",
 
     # --- knobs
-    "Rotary Body": "ff2f343a",          # the bevel gradient is derived from this
+    "Rotary Body": "ff3d444d",          # the bevel gradient is derived from this
     "Rotary Body Border": "ff0a0b0d",
-    "Rotary Arc Unselected": "ff41474e",
+    "Rotary Arc Unselected": "ff545c66",
     "Rotary Arc Unselected Disabled": "ff2a2e33",
     "Rotary Hand": "fff2f7fb",
 
@@ -114,11 +114,11 @@ GLOBAL = {
     # panels square off, which is the bulk of the Serum-like change
     "Knob Body Size": 28.0,
     "Knob Arc Size": 36.0,
-    "Knob Arc Thickness": 2.4,
+    "Knob Arc Thickness": 2.0,
     "Knob Handle Length": 0.68,
     "Knob Mod Amount Arc Size": 43.0,
     "Knob Mod Meter Arc Size": 42.0,
-    "Knob Shadow Width": 5.0,
+    "Knob Shadow Width": 3.0,
     "Body Rounding": 3.0,
     "Widget Rounded Corner": 3.0,
     "Label Rounding": 2.0,
@@ -169,16 +169,57 @@ def c_literal(data: bytes) -> str:
     return "\n".join(out) + ";"
 
 
-def regenerate_binary_data(path: pathlib.Path, skin_bytes: bytes, old_size: int) -> bool:
+def decode_literal(literal: str) -> bytes:
+    """Decodes a C string literal back to bytes, to verify what we emitted."""
+    out = bytearray()
+    for line in literal.strip().rstrip(";").split("\n"):
+        line = line.strip().rstrip(";").strip()
+        if not (line.startswith('"') and line.endswith('"')):
+            raise ValueError(f"unexpected literal line: {line[:40]}")
+        inner, i = line[1:-1], 0
+        while i < len(inner):
+            c = inner[i]
+            if c != "\\":
+                out.append(ord(c)); i += 1
+                continue
+            nxt = inner[i + 1]
+            if nxt == "n": out.append(10); i += 2
+            elif nxt == '"': out.append(34); i += 2
+            elif nxt == "\\": out.append(92); i += 2
+            elif nxt.isdigit():
+                digits = inner[i + 1:i + 4]
+                out.append(int(digits, 8)); i += 1 + len(digits)
+            else:
+                out.append(ord(nxt)); i += 2
+    return bytes(out)
+
+
+def regenerate_binary_data(path: pathlib.Path, skin_bytes: bytes) -> bool:
+    """
+    Replaces the compiled skin blob and every declared length.
+
+    The lengths are rewritten by matching the symbol, never by assuming what
+    the previous value was: deriving it from the file on disk once left a stale
+    length behind, JUCE read a truncated JSON, the skin silently failed to
+    parse and the whole interface rendered black.
+    """
     src = path.read_text()
     start = src.find("static const unsigned char temp_binary_data_3[] =")
     if start < 0:
         return False
     body_start = src.index("\n", start) + 1
     body_end = src.index("\n\n", body_start)
-    src = src[:body_start] + c_literal(skin_bytes) + src[body_end:]
-    src = src.replace(f"numBytes = {old_size}; return default_vitalskin;",
-                      f"numBytes = {len(skin_bytes)}; return default_vitalskin;")
+    literal = c_literal(skin_bytes)
+
+    decoded = decode_literal(literal)
+    if decoded != skin_bytes:
+        raise SystemExit(f"literal round-trip failed: {len(decoded)} vs {len(skin_bytes)} bytes")
+
+    src = src[:body_start] + literal + src[body_end:]
+    src, n = re.subn(r"numBytes = \d+; return default_vitalskin;",
+                     f"numBytes = {len(skin_bytes)}; return default_vitalskin;", src)
+    if n != 1:
+        raise SystemExit(f"expected one numBytes site for default_vitalskin, patched {n}")
     path.write_text(src)
     return True
 
@@ -214,14 +255,14 @@ def main():
         if not p.exists():
             continue
         header = p.with_suffix(".h")
-        ok = regenerate_binary_data(p, blob, old_size)
+        ok = regenerate_binary_data(p, blob)
         if ok and header.exists():
-            h = header.read_text().replace(
-                f"default_vitalskinSize = {old_size}",
-                f"default_vitalskinSize = {len(blob)}",
-            )
+            h, n = re.subn(r"default_vitalskinSize = \d+",
+                           f"default_vitalskinSize = {len(blob)}", header.read_text())
+            if n != 1:
+                raise SystemExit(f"expected one size declaration in {header}, patched {n}")
             header.write_text(h)
-        print(f"{'regenerated' if ok else 'SKIPPED'} {lib}")
+        print(f"{'regenerated' if ok else 'SKIPPED'} {lib} (declares {len(blob)} bytes)")
 
 
 if __name__ == "__main__":

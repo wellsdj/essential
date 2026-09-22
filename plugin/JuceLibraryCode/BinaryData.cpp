@@ -73,7 +73,7 @@ static const unsigned char temp_binary_data_3[] =
 "\"Body Text\":\"ffc8ced6\",\"Border\":\"8ffffff\",\"Button Font Size\":11.0,\"Heading Text\":\"ffe9eef4\",\"Icon Bu"
 "tton Off\":\"ff8d96a1\",\"Icon Button Off Hover\":\"ffc4ccd5\",\"Icon Button Off Pressed\":\"ff7d93a8\",\"Icon B"
 "utton On\":\"ff4fb6ff\",\"Icon Button On Hover\":\"ff8ad3ff\",\"Icon Button On Pressed\":\"ff2b8fe0\",\"Icon Sel"
-"ector Icon\":\"ff8d96a1\",\"Knob Arc Size\":36.0,\"Knob Arc Thickness\":2.4,\"Knob Body Size\":28.0,\"Knob Han"
+"ector Icon\":\"ff8d96a1\",\"Knob Arc Size\":36.0,\"Knob Arc Thickness\":2.0,\"Knob Body Size\":28.0,\"Knob Han"
 "dle Length\":0.68,\"Knob Mod Amount Arc Size\":43.0,\"Knob Mod Amount Arc Thickness\":0.5,\"Knob Mod Meter"
 " Arc Size\":42.0,\"Knob Mod Meter Arc Thickness\":3.0,\"Knob Offset\":-7.0,\"Knob Section Height\":71.0,\"La"
 "bel Background\":\"ff1a1c1f\",\"Label Background Height\":18.0,\"Label Connection\":\"393636\",\"Label Height\""
@@ -85,8 +85,8 @@ static const unsigned char temp_binary_data_3[] =
 "Control\":\"ff3fe3d0\",\"Modulation Meter Left\":\"ff2fdc82\",\"Modulation Meter Right\":\"ff35bdf0\",\"Overlay "
 "Screen\":\"44000000\",\"Padding\":4.0,\"Popup Background\":\"ff1a1c1f\",\"Popup Border\":\"ff000000\",\"Popup Sele"
 "ctor Background\":\"ff26292d\",\"Power Button Off\":\"ff4d545c\",\"Power Button On\":\"ff4fb6ff\",\"Preset Text\""
-":\"ffffffff\",\"Rotary Arc\":\"ff4fb6ff\",\"Rotary Arc Disabled\":\"ff7d93a8\",\"Rotary Arc Unselected\":\"ff4147"
-"4e\",\"Rotary Arc Unselected Disabled\":\"ff2a2e33\",\"Rotary Body\":\"ff2f343a\",\"Rotary Body Border\":\"ff0a0"
+":\"ffffffff\",\"Rotary Arc\":\"ff4fb6ff\",\"Rotary Arc Disabled\":\"ff7d93a8\",\"Rotary Arc Unselected\":\"ff545c"
+"66\",\"Rotary Arc Unselected Disabled\":\"ff2a2e33\",\"Rotary Body\":\"ff3d444d\",\"Rotary Body Border\":\"ff0a0"
 "b0d\",\"Rotary Hand\":\"fff2f7fb\",\"Rotary Option Width\":20.0,\"Rotary Option X Offset\":24.0,\"Rotary Optio"
 "n Y Offset\":4.0,\"Shadow\":\"b3000000\",\"Slider Width\":24.0,\"Text Button Height\":20.0,\"Text Component Ba"
 "ckground\":\"ff1d2023\",\"Text Component Font Size\":15.0,\"Text Component Height\":43.0,\"Text Component La"
@@ -173,7 +173,7 @@ static const unsigned char temp_binary_data_3[] =
 "ctor Background\":\"ff14181b\",\"Text Component Offset\":0.0,\"UI Button\":\"ff141d27\",\"UI Button Hover\":\"ff"
 "121a24\",\"UI Button Press\":\"ff0b1118\",\"UI Button Text\":\"ff3fe3d0\",\"Widget Accent 1\":\"bbffffff\",\"Widge"
 "t Accent 2\":\"11ffffff\",\"Widget Center Line\":\"ff4fb6ff\",\"Widget Primary Disabled\":\"ff7d93a8\",\"Widget "
-"Secondary Disabled\":\"667d93a8\"}},\"synth_version\":65541,\"Knob Shadow Width\":5.0}";
+"Secondary Disabled\":\"667d93a8\"}},\"synth_version\":65541,\"Knob Shadow Width\":3.0}";
 
 const char* default_vitalskin = (const char*) temp_binary_data_3;
 
@@ -9327,7 +9327,7 @@ const char* getNamedResource (const char* resourceNameUTF8, int& numBytes)
         case 0x34f65c2f:  numBytes = 87; return _5_Limit_scl;
         case 0x5ebfc1b1:  numBytes = 85; return _7_Limit_scl;
         case 0xd4ac7689:  numBytes = 108; return Pythagorean_scl;
-        case 0xd9fa030b:  numBytes = 10456; return default_vitalskin;
+        case 0xd9fa030b:  numBytes = 10479; return default_vitalskin;
         case 0x11764cb9:  numBytes = 119380; return DroidSansMono_ttf;
         case 0xbd046e4d:  numBytes = 77192; return LatoLight_ttf;
         case 0xdc5a21d3:  numBytes = 75136; return LatoRegular_ttf;
