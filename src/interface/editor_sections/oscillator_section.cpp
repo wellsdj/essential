@@ -573,32 +573,22 @@ void OscillatorSection::paintBackground(Graphics& g) {
   drawLabelForComponent(g, TRANS("LEVEL"), level_.get());
 
   int widget_margin = findValue(Skin::kWidgetMargin);
-  int level_pan_x = title_width;
-  int level_pan_width = getWidth() * kSectionWidthRatio;
-  int knob_section_height = getKnobSectionHeight();
-  int top_row_width = level_pan_width - 2 * widget_margin;
-  int section2_x = getWidth() - 2 * top_row_width - 2 * widget_margin;
-  int top_row_y = widget_margin;
-  int top_row_height = level_->getY() - top_row_y;
-  int phase_x = section2_x + top_row_width + widget_margin;
-  int unison_x = section2_x;
 
   g.setColour(findColour(Skin::kTextComponentBackground, true));
   int label_rounding = findValue(Skin::kLabelBackgroundRounding);
-  int morph_y = getHeight() - knob_section_height + widget_margin;
-  Rectangle<int> spectral_normal_bounds(spectral_morph_amount_->getX(), morph_y,
-                                        spectral_morph_amount_->getWidth(), knob_section_height - 2 * widget_margin);
-  g.fillRoundedRectangle(getLabelBackgroundBounds(spectral_normal_bounds, false).toFloat(), label_rounding);
-  Rectangle<int> distortion_normal_bounds(distortion_amount_->getX(), morph_y,
-                                          distortion_amount_->getWidth(), knob_section_height - 2 * widget_margin);
-  g.fillRoundedRectangle(getLabelBackgroundBounds(distortion_normal_bounds, false).toFloat(), label_rounding);
+  g.fillRoundedRectangle(getLabelBackgroundBounds(spectral_morph_amount_.get()).toFloat(), label_rounding);
+  g.fillRoundedRectangle(getLabelBackgroundBounds(distortion_amount_.get()).toFloat(), label_rounding);
   g.fillRoundedRectangle(destination_selector_->getBounds().toFloat(), label_rounding);
 
   paintKnobShadows(g);
 
-  paintJointControl(g, level_pan_x + widget_margin, top_row_y, top_row_width, top_row_height, "PITCH");
-  paintJointControl(g, unison_x, top_row_y, top_row_width, top_row_height, "UNISON");
-  paintJointControl(g, phase_x, top_row_y, top_row_width, top_row_height, "PHASE");
+  paintJointControl(g, joint_pitch_bounds_.getX(), joint_pitch_bounds_.getY(),
+                    joint_pitch_bounds_.getWidth(), joint_pitch_bounds_.getHeight(), "PITCH");
+  paintJointControl(g, joint_unison_bounds_.getX(), joint_unison_bounds_.getY(),
+                    joint_unison_bounds_.getWidth(), joint_unison_bounds_.getHeight(), "UNISON");
+  paintJointControl(g, joint_phase_bounds_.getX(), joint_phase_bounds_.getY(),
+                    joint_phase_bounds_.getWidth(), joint_phase_bounds_.getHeight(), "PHASE");
+  (void)title_width;
   wavetable_->setDirty();
 }
 
@@ -646,6 +636,7 @@ void OscillatorSection::resized() {
   y += header_height + widget_margin;
 
   // octave / semitone
+  joint_pitch_bounds_ = Rectangle<int>(widget_margin, y, inner_width, joint_height);
   placeJointControls(widget_margin, y, inner_width, joint_height,
                      transpose_.get(), tune_.get(), transpose_quantize_button_.get());
   y += joint_height + widget_margin;
@@ -675,11 +666,13 @@ void OscillatorSection::resized() {
   }
 
   // unison voices / detune / blend, then phase / randomisation
+  joint_unison_bounds_ = Rectangle<int>(widget_margin, y, inner_width, joint_height);
   placeJointControls(widget_margin, y, inner_width, joint_height,
                      unison_voices_.get(), unison_detune_.get(), unison_detune_power_.get());
   unison_viewer_->setBounds(unison_detune_power_->getBounds());
   y += joint_height + widget_margin;
 
+  joint_phase_bounds_ = Rectangle<int>(widget_margin, y, inner_width, joint_height);
   placeJointControls(widget_margin, y, inner_width, joint_height,
                      phase_.get(), random_phase_.get(), nullptr);
   y += joint_height + widget_margin;
@@ -689,9 +682,7 @@ void OscillatorSection::resized() {
                    { level_.get(), pan_.get(), spectral_morph_amount_.get(), distortion_amount_.get() });
 
   // the morph and warp type selectors live in each knob's label strip
-  Rectangle<int> spectral_bounds(spectral_morph_amount_->getX(), y + widget_margin,
-                                 spectral_morph_amount_->getWidth(), knob_section_height - 2 * widget_margin);
-  Rectangle<int> spectral_label_bounds = getLabelBackgroundBounds(spectral_bounds);
+  Rectangle<int> spectral_label_bounds = getLabelBackgroundBounds(spectral_morph_amount_.get());
   int browse_width = spectral_label_bounds.getHeight();
   int browse_y = spectral_label_bounds.getY();
 
@@ -704,9 +695,7 @@ void OscillatorSection::resized() {
   spectral_morph_type_selector_->setBounds(spectral_menu_x, browse_y,
                                            next_spectral_->getX() - spectral_menu_x, browse_width);
 
-  Rectangle<int> distortion_bounds(distortion_amount_->getX(), y + widget_margin,
-                                   distortion_amount_->getWidth(), knob_section_height - 2 * widget_margin);
-  Rectangle<int> distortion_label_bounds = getLabelBackgroundBounds(distortion_bounds);
+  Rectangle<int> distortion_label_bounds = getLabelBackgroundBounds(distortion_amount_.get());
   prev_distortion_->setBounds(distortion_amount_->getX(), browse_y, browse_width, browse_width);
   next_distortion_->setBounds(distortion_amount_->getRight() - browse_width, browse_y,
                               browse_width, browse_width);

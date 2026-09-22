@@ -48,6 +48,20 @@ The synthesis engine is still entirely unmodified. These changes are cosmetic.
 | `standalone/JuceLibraryCode/JuceHeader.h`, `plugin/…` | `projectName` changed from `Vial` to `Essential`, which is what the window title reads from |
 | `src/interface/editor_sections/*` | remaining user-visible and thread-name strings saying "Vial" now say "Essential" |
 
+## Layout rearrangement (2026-09-22)
+
+Still cosmetic; no synthesis code touched.
+
+| File | Change |
+| --- | --- |
+| `src/interface/editor_sections/full_interface.cpp` | the tabbed audio sections became a full-width strip across the top with modulation beneath, rather than modulation occupying the right third |
+| `src/interface/editor_sections/synthesis_interface.cpp` | oscillators, sample source and both filters laid out side by side as columns |
+| `src/interface/editor_sections/oscillator_section.cpp/.h` | each oscillator reads top to bottom as a column; `paintBackground` now follows the placed bounds instead of recomputing the old geometry |
+| `src/interface/editor_sections/sample_section.cpp` | same column treatment |
+| `src/interface/editor_sections/filter_section.cpp` | response curve on top, two knob rows beneath, source routing along the bottom; cutoff, resonance and blend became knobs |
+| `src/interface/editor_sections/modulation_interface.cpp/.h` | envelopes and LFOs side by side at full height instead of stacked in thirds |
+| `standalone/builds/osx/Info-App.plist` | added `NSMicrophoneUsageDescription`. JUCE's standalone opens an audio input on launch, and without the key macOS terminates the process outright (`__TCC_CRASHING_DUE_TO_PRIVACY_VIOLATION__`) rather than prompting |
+
 ## What was deliberately NOT changed
 
 * Every copyright header. They stay exactly as Matt Tytel wrote them.

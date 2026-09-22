@@ -132,6 +132,12 @@ class OscillatorSection : public SynthSection, public PresetSelector::Listener,
     bool showing_language_menu_;
     int ttwt_language_;
 
+    // where resized() placed each joint-control row, so the background
+    // painting follows the layout instead of recomputing it
+    Rectangle<int> joint_pitch_bounds_;
+    Rectangle<int> joint_unison_bounds_;
+    Rectangle<int> joint_phase_bounds_;
+
     std::unique_ptr<SynthButton> oscillator_on_;
     std::unique_ptr<SynthButton> dimension_button_;
     std::unique_ptr<SynthSlider> dimension_value_;
