@@ -271,14 +271,12 @@ void FilterSection::paintBackground(Graphics& g) {
   SynthSection::paintBackground(g);
   setLabelFont(g);
   drawLabelForComponent(g, TRANS("MIX"), mix_.get());
-  // cutoff, resonance and blend are knobs in this layout, so they need labels
-  // like the rest of the row rather than the sliders' inline readouts
+  // cutoff, resonance and blend are knobs in this layout, so they carry plain
+  // labels like MIX. No label background: drawing one here covers the text and
+  // clips into the knob above it.
   drawLabelForComponent(g, TRANS("CUTOFF"), cutoff_.get());
   drawLabelForComponent(g, TRANS("RES"), resonance_.get());
   drawLabelForComponent(g, TRANS("BLEND"), blend_.get());
-  drawLabelBackgroundForComponent(g, cutoff_.get());
-  drawLabelBackgroundForComponent(g, resonance_.get());
-  drawLabelBackgroundForComponent(g, blend_.get());
 
   int title_width = getTitleWidth();
   int blend_label_padding_y = size_ratio_ * kBlendLabelPaddingY;
@@ -298,19 +296,24 @@ void FilterSection::paintBackground(Graphics& g) {
     blend_height = filter_response_->getY();
   }
 
-  g.setColour(findColour(Skin::kBodyText, true));
-  int morph_width = size_ratio_ * kBlendLabelWidth;
-  int morph_height = blend_height - 2 * blend_label_padding_y;
-  int left_morph_x = blend_->getX() - morph_width + widget_margin;
-  int right_morph_x = getWidth() - morph_width;
+  // The morph glyphs flanked the blend slider in the original layout. Blend is
+  // a knob in the column layout, so these would land against the header; they
+  // are only drawn where the slider still sits beside them.
+  if (!specify_input_) {
+    g.setColour(findColour(Skin::kBodyText, true));
+    int morph_width = size_ratio_ * kBlendLabelWidth;
+    int morph_height = blend_height - 2 * blend_label_padding_y;
+    int left_morph_x = blend_->getX() - morph_width + widget_margin;
+    int right_morph_x = getWidth() - morph_width;
 
-  Rectangle<float> left_morph_bounds(left_morph_x, morph_y, morph_width, morph_height);
-  Path left_morph = getLeftMorphPath();
-  g.fillPath(left_morph, left_morph.getTransformToScaleToFit(left_morph_bounds, true));
+    Rectangle<float> left_morph_bounds(left_morph_x, morph_y, morph_width, morph_height);
+    Path left_morph = getLeftMorphPath();
+    g.fillPath(left_morph, left_morph.getTransformToScaleToFit(left_morph_bounds, true));
 
-  Rectangle<float> right_morph_bounds(right_morph_x, morph_y, morph_width, morph_height);
-  Path right_morph = getRightMorphPath();
-  g.fillPath(right_morph, right_morph.getTransformToScaleToFit(right_morph_bounds, true));
+    Rectangle<float> right_morph_bounds(right_morph_x, morph_y, morph_width, morph_height);
+    Path right_morph = getRightMorphPath();
+    g.fillPath(right_morph, right_morph.getTransformToScaleToFit(right_morph_bounds, true));
+  }
 }
 
 void FilterSection::positionTopBottom() {
@@ -326,12 +329,12 @@ void FilterSection::positionTopBottom() {
   int routing_height = knob_section_height * 0.55f;
   int knob_rows_height = 2 * knob_section_height;
   int response_y = title_width + widget_margin;
-  int response_height = h - response_y - knob_rows_height - routing_height - widget_margin;
+  int response_height = h - response_y - knob_rows_height - routing_height - 3 * widget_margin;
   response_height = std::max(response_height, knob_section_height / 2);
 
   filter_response_->setBounds(widget_margin, response_y, w - 2 * widget_margin, response_height);
 
-  int knob_y = filter_response_->getBottom() + widget_margin;
+  int knob_y = filter_response_->getBottom() + 2 * widget_margin;
   placeKnobsInArea(Rectangle<int>(0, knob_y, w, knob_section_height),
                    { cutoff_.get(), resonance_.get(), blend_.get() });
   placeKnobsInArea(Rectangle<int>(0, knob_y + knob_section_height, w, knob_section_height),

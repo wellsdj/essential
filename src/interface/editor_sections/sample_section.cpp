@@ -213,7 +213,7 @@ void SampleSection::resized() {
   int inner_width = w - 2 * widget_margin;
 
   int header_height = title_width - 2 * widget_margin;
-  int joint_height = text_height + 2 * widget_margin;
+  int joint_height = text_height + widget_margin;
   int toggles_height = text_height + widget_margin;
 
   int y = widget_margin;
