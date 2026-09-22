@@ -149,40 +149,44 @@ void ModulationInterface::paintBackgroundShadow(Graphics& g) {
 }
 
 void ModulationInterface::resized() {
+  // Envelopes and LFOs sit side by side, each with the full height of the
+  // modulation strip, rather than stacked in thirds. Stacking left the LFO
+  // shape squashed into a band too thin to read or edit.
   int padding = getPadding();
-  int active_width = getWidth();
-  int active_height = getHeight() - 2 * padding;
-  int envelope_height = (active_height * kMinEnvelopeModulationsToShow * 1.0f) / kMinTotalModulations;
-  int lfo_height = (active_height * kMinLfoModulationsToShow * 1.0f) / kMinTotalModulations;
   int mod_width = findValue(Skin::kModulationButtonWidth);
+  int w = getWidth();
+  int h = getHeight();
 
-  envelope_tab_selector_->setBounds(0, 0, mod_width, envelope_height);
-  Rectangle<int> envelope_bounds(mod_width, 0, active_width - mod_width, envelope_height);
+  // narrow column on the right for the random sources and keyboard modulations
+  int right_width = mod_width * 5;
+  int right_x = w - right_width;
+
+  int columns_width = right_x - padding;
+  int envelope_width = (columns_width - padding) * kEnvelopeWidthRatio;
+  int lfo_x = envelope_width + padding;
+  int lfo_width = columns_width - lfo_x;
+
+  envelope_tab_selector_->setBounds(0, 0, mod_width, h);
+  Rectangle<int> envelope_bounds(mod_width, 0, envelope_width - mod_width, h);
   for (int i = 0; i < vital::kNumEnvelopes; ++i)
     envelopes_[i]->setBounds(envelope_bounds);
 
-  int lfo_y = envelope_bounds.getBottom() + padding;
-  lfo_tab_selector_->setBounds(0, lfo_y, mod_width, lfo_height);
-  Rectangle<int> lfo_bounds(mod_width, lfo_y, active_width - mod_width, lfo_height);
+  lfo_tab_selector_->setBounds(lfo_x, 0, mod_width, h);
+  Rectangle<int> lfo_bounds(lfo_x + mod_width, 0, lfo_width - mod_width, h);
   for (int i = 0; i < vital::kNumLfos; ++i)
     lfos_[i]->setBounds(lfo_bounds);
 
-  int keyboard_width = mod_width * 4;
-  int keyboard_x = getWidth() - keyboard_width;
-
-  int random_y = lfo_bounds.getBottom() + padding;
-  int random_height = getHeight() - random_y;
-  random_tab_selector_->setBounds(0, random_y, mod_width, random_height);
-  Rectangle<int> random_bounds(mod_width, random_y, keyboard_x - padding - mod_width, random_height);
+  int random_height = (h - padding) / 2;
+  random_tab_selector_->setBounds(right_x, 0, mod_width, random_height);
+  Rectangle<int> random_bounds(right_x + mod_width, 0, right_width - mod_width, random_height);
   for (int i = 0; i < vital::kNumRandomLfos; ++i)
     random_lfos_[i]->setBounds(random_bounds);
 
-  int keyboard_top_height = random_height / 2;
-  keyboard_modulations_top_->setBounds(keyboard_x, random_y, keyboard_width, keyboard_top_height);
-
-  int keyboard_bottom_y = random_y + keyboard_top_height + 1;
-  int keyboard_bottom_height = getHeight() - keyboard_bottom_y;
-  keyboard_modulations_bottom_->setBounds(keyboard_x, keyboard_bottom_y, keyboard_width, keyboard_bottom_height);
+  int keyboard_y = random_height + padding;
+  int keyboard_height = (h - keyboard_y - 1) / 2;
+  keyboard_modulations_top_->setBounds(right_x, keyboard_y, right_width, keyboard_height);
+  keyboard_modulations_bottom_->setBounds(right_x, keyboard_y + keyboard_height + 1,
+                                          right_width, h - keyboard_y - keyboard_height - 1);
 
   envelope_tab_selector_->setFontSize(getModFontSize());
   lfo_tab_selector_->setFontSize(getModFontSize());

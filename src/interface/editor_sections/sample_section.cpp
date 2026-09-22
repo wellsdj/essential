@@ -201,53 +201,52 @@ void SampleSection::resized() {
 
   destination_text_->setColor(findColour(Skin::kBodyText, true));
 
+  // Column layout to match the oscillators either side of it: name, tuning,
+  // the waveform itself, its toggles, then level and pan.
   int title_width = getTitleWidth();
   int widget_margin = findValue(Skin::kWidgetMargin);
-  int pitch_x = title_width;
-  int pitch_width = getWidth() * 0.19f;
-  int sample_x = pitch_x + pitch_width;
-  int section2_x = getWidth() - 2 * pitch_width + widget_margin;
-  int slider_x = section2_x + widget_margin - getSliderWidth() + getSliderOverlapWithSpace();
-
-  int sample_width = slider_x - sample_x + getSliderOverlapWithSpace();
   int label_height = findValue(Skin::kLabelBackgroundHeight);
-  int top_row_y = widget_margin;
-  int level_pan_width = pitch_width;
+  int text_height = findValue(Skin::kTextButtonHeight);
+  int knob_section_height = getKnobSectionHeight();
+  int w = getWidth();
+  int h = getHeight();
+  int inner_width = w - 2 * widget_margin;
 
-  int destination_x = pitch_x + widget_margin;
-  int destination_y = getHeight() - label_height - widget_margin;
-  destination_selector_->setBounds(destination_x, destination_y, pitch_width - 2 * widget_margin, label_height);
+  int header_height = title_width - 2 * widget_margin;
+  int joint_height = text_height + 2 * widget_margin;
+  int toggles_height = text_height + widget_margin;
+
+  int y = widget_margin;
+  preset_selector_->setBounds(widget_margin, y, inner_width, header_height);
+  y += header_height + widget_margin;
+
+  placeJointControls(widget_margin, y, inner_width, joint_height,
+                     transpose_.get(), tune_.get(), transpose_quantize_button_.get());
+  y += joint_height + widget_margin;
+
+  int bottom_stack = toggles_height + widget_margin + knob_section_height + label_height + widget_margin;
+  int viewer_height = std::max(h - y - bottom_stack - widget_margin, text_height);
+  sample_viewer_->setBounds(widget_margin, y, inner_width, viewer_height);
+  y += viewer_height + widget_margin;
+
+  Button* toggles[] = { keytrack_.get(), loop_.get(), random_phase_.get(), bounce_.get() };
+  int num_toggles = 4;
+  int toggle_width = (inner_width - (num_toggles - 1) * widget_margin) / num_toggles;
+  int toggle_size = std::min(toggles_height, toggle_width);
+  for (int i = 0; i < num_toggles; ++i) {
+    toggles[i]->setBounds(widget_margin + i * (toggle_width + widget_margin), y, toggle_size, toggle_size);
+  }
+  y += toggles_height + widget_margin;
+
+  placeKnobsInArea(Rectangle<int>(0, y, w, knob_section_height), { level_.get(), pan_.get() });
+
+  int destination_y = h - label_height - widget_margin;
+  destination_selector_->setBounds(widget_margin, destination_y, inner_width, label_height);
   destination_text_->setBounds(destination_selector_->getBounds());
   destination_text_->setTextSize(findValue(Skin::kLabelHeight));
-
-  prev_destination_->setBounds(destination_x, destination_y, label_height, label_height);
+  prev_destination_->setBounds(widget_margin, destination_y, label_height, label_height);
   next_destination_->setBounds(destination_selector_->getRight() - label_height, destination_y,
                                label_height, label_height);
-
-  int text_component_height = destination_selector_->getY() - top_row_y - widget_margin;
-  placeJointControls(pitch_x + widget_margin, top_row_y, pitch_width - 2 * widget_margin, text_component_height,
-                     transpose_.get(), tune_.get(), transpose_quantize_button_.get());
-
-  placeKnobsInArea(Rectangle<int>(section2_x, 0, level_pan_width, getHeight()), { level_.get(), pan_.get() });
-
-  sample_viewer_->setBounds(sample_x, title_width - widget_margin, sample_width, getHeight() - title_width);
-  preset_selector_->setBounds(sample_x, widget_margin, sample_width, title_width - 2 * widget_margin);
-
-  destination_text_->setBounds(destination_selector_->getBounds());
-  destination_text_->setTextSize(findValue(Skin::kLabelHeight));
-
-  int buttons_x = section2_x + level_pan_width;
-  int buttons_width = getWidth() - buttons_x - widget_margin;
-  int buttons_height = getHeight() - 2 * widget_margin;
-  int button_width = std::min(buttons_height / 2, buttons_width / 2);
-  int button_padding_x = (buttons_width - 2 * button_width) / 3;
-
-  int button_x1 = buttons_x + button_padding_x;
-  int button_x2 = buttons_x + buttons_width - button_width - button_padding_x;
-  keytrack_->setBounds(button_x1, widget_margin, button_width, button_width);
-  loop_->setBounds(button_x1, widget_margin + buttons_height / 2, button_width, button_width);
-  random_phase_->setBounds(button_x2, widget_margin, button_width, button_width);
-  bounce_->setBounds(button_x2, widget_margin + buttons_height / 2, button_width, button_width);
 }
 
 void SampleSection::reset() {

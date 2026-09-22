@@ -53,27 +53,37 @@ void SynthesisInterface::paintBackground(Graphics& g) {
 }
 
 void SynthesisInterface::resized() {
+  // Serum-style strip: the oscillators, the sample/noise source and both
+  // filters sit side by side across the top rather than stacked, so every
+  // sound source is visible at once.
   int padding = getPadding();
-  int active_width = getWidth() - padding;
-  int width_left = (active_width - padding) / 2;
-  int width_right = active_width - width_left;
-  int right_x = width_left + padding;
+  int num_columns = vital::kNumOscillators + 3;   // oscillators + sample + 2 filters
+  int total_padding = padding * (num_columns - 1);
+  int usable = getWidth() - total_padding;
 
-  int oscillator_margin = oscillators_[0]->findValue(Skin::kWidgetMargin);
-  int oscillator_height = 2 * (int)oscillators_[0]->getKnobSectionHeight() - oscillator_margin;
+  // oscillators carry a wavetable display, so they get more width than the
+  // sample source and the filters
+  float osc_weight = 1.25f;
+  float other_weight = 1.0f;
+  float total_weight = vital::kNumOscillators * osc_weight + 3 * other_weight;
+  int osc_width = usable * osc_weight / total_weight;
+  int other_width = usable * other_weight / total_weight;
 
-  for (int i = 0; i < vital::kNumOscillators; ++i)
-    oscillators_[i]->setBounds(0, i * (oscillator_height + padding), getWidth(), oscillator_height);
+  int x = 0;
+  for (int i = 0; i < vital::kNumOscillators; ++i) {
+    oscillators_[i]->setBounds(x, 0, osc_width, getHeight());
+    x += osc_width + padding;
+  }
 
-  int sample_y = oscillators_[vital::kNumOscillators - 1]->getBottom() + padding;
-  int sample_height = sample_section_->getKnobSectionHeight();
-  int filter_y = sample_y + sample_height + findValue(Skin::kLargePadding);
-  int filter_height = getHeight() - filter_y;
+  sample_section_->setBounds(x, 0, other_width, getHeight());
+  x += other_width + padding;
 
-  sample_section_->setBounds(0, sample_y, getWidth(), sample_height);
+  filter_section_1_->setBounds(x, 0, other_width, getHeight());
+  x += other_width + padding;
 
-  filter_section_1_->setBounds(0, filter_y, width_left, filter_height);
-  filter_section_2_->setBounds(right_x, filter_y, width_right, filter_height);
+  // the last column takes whatever rounding left over
+  filter_section_2_->setBounds(x, 0, getWidth() - x, getHeight());
+
   SynthSection::resized();
 }
 

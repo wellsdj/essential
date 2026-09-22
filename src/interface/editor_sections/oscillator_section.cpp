@@ -629,96 +629,100 @@ void OscillatorSection::resized() {
   int widget_margin = getWidgetMargin();
   int text_height = findValue(Skin::kTextButtonHeight);
   int slider_width = getSliderWidth();
-
   int knob_section_height = getKnobSectionHeight();
-  int slider_overlap = getSliderOverlap();
-  int overlap_with_space = getSliderOverlapWithSpace();
-  int wave_section_height = getHeight() - 2 * widget_margin;
-  if (distortion_phase_->isVisible())
-    wave_section_height -= slider_width - slider_overlap - overlap_with_space;
 
-  int level_pan_x = title_width;
-  int level_pan_width = getWidth() * kSectionWidthRatio;
-  int top_row_width = level_pan_width - 2 * widget_margin;
-  int knob_y = getHeight() - label_height - widget_margin - knob_section_height;
-  int big_knob_height = getHeight() - knob_y;
-  placeKnobsInArea(Rectangle<int>(level_pan_x, knob_y, level_pan_width, knob_section_height),
-                   { level_.get(), pan_.get() });
+  // Column layout: the oscillators sit side by side as a strip, so each one
+  // reads top to bottom — wavetable name, tuning, the wavetable itself, then
+  // its unison and shaping controls — rather than left to right.
+  int w = getWidth();
+  int h = getHeight();
+  int inner_width = w - 2 * widget_margin;
 
-  int section2_x = getWidth() - 2 * top_row_width - 2 * widget_margin;
-  int wave_frame_x = section2_x - slider_width + overlap_with_space;
-  int wavetable_x = level_pan_width + level_pan_x;
-  int wavetable_width = wave_frame_x - wavetable_x + overlap_with_space;
+  int header_height = title_width - 2 * widget_margin;
+  int joint_height = text_height + 2 * widget_margin;
 
-  wavetable_->setBounds(wavetable_x, widget_margin, wavetable_width, wave_section_height);
-  preset_selector_->setBounds(wavetable_x, widget_margin, wavetable_width, title_width - 2 * widget_margin);
-  dimension_button_->setBounds(wavetable_x, widget_margin + wave_section_height - text_height,
-                               text_height, text_height);
+  int y = widget_margin;
+  preset_selector_->setBounds(widget_margin, y, inner_width, header_height);
+  y += header_height + widget_margin;
 
-  int wave_frame_height = wave_section_height + 2 * widget_margin;
-  wave_frame_->setBounds(wave_frame_x, 0, slider_width, wave_frame_height);
-  int edit_x = wavetable_->getRight() - text_height;
-  edit_button_->setBounds(edit_x, widget_margin + wave_section_height - text_height, text_height, text_height);
-
-  int top_row_y = widget_margin;
-  int text_section_height = knob_y - widget_margin;
-  placeJointControls(title_width + widget_margin, top_row_y, level_pan_width - 2 * widget_margin, text_section_height,
+  // octave / semitone
+  placeJointControls(widget_margin, y, inner_width, joint_height,
                      transpose_.get(), tune_.get(), transpose_quantize_button_.get());
+  y += joint_height + widget_margin;
 
-  int section2_width = getWidth() - section2_x;
-  int unison_x = section2_x;
-  placeJointControls(unison_x, top_row_y, top_row_width, text_section_height,
+  // everything below the wavetable is fixed height; the display takes the rest
+  int bottom_stack = 2 * (joint_height + widget_margin)    // unison and phase rows
+                   + knob_section_height                   // the knob row
+                   + label_height + widget_margin;         // destination selector
+  int wave_height = h - y - bottom_stack - widget_margin;
+  if (distortion_phase_->isVisible())
+    wave_height -= slider_width - getSliderOverlap();
+  wave_height = std::max(wave_height, text_height);
+
+  int wave_width = inner_width - slider_width;
+  wavetable_->setBounds(widget_margin, y, wave_width, wave_height);
+  wave_frame_->setBounds(widget_margin + wave_width, y - widget_margin,
+                         slider_width, wave_height + 2 * widget_margin);
+
+  dimension_button_->setBounds(widget_margin, y + wave_height - text_height, text_height, text_height);
+  edit_button_->setBounds(wavetable_->getRight() - text_height, y + wave_height - text_height,
+                          text_height, text_height);
+  y += wave_height + widget_margin;
+
+  if (distortion_phase_->isVisible()) {
+    distortion_phase_->setBounds(widget_margin, y - getSliderOverlap(), wave_width, slider_width);
+    y += slider_width - getSliderOverlap();
+  }
+
+  // unison voices / detune / blend, then phase / randomisation
+  placeJointControls(widget_margin, y, inner_width, joint_height,
                      unison_voices_.get(), unison_detune_.get(), unison_detune_power_.get());
   unison_viewer_->setBounds(unison_detune_power_->getBounds());
+  y += joint_height + widget_margin;
 
-  int phase_x = unison_x + top_row_width + widget_margin;
-  placeJointControls(phase_x, top_row_y, top_row_width, text_section_height,
+  placeJointControls(widget_margin, y, inner_width, joint_height,
                      phase_.get(), random_phase_.get(), nullptr);
+  y += joint_height + widget_margin;
 
-  placeKnobsInArea(Rectangle<int>(section2_x - widget_margin, knob_y, section2_width + widget_margin, big_knob_height),
-                   { spectral_morph_amount_.get(), distortion_amount_.get() });
+  // level, pan, wavetable position and warp amount share one row
+  placeKnobsInArea(Rectangle<int>(0, y, w, knob_section_height),
+                   { level_.get(), pan_.get(), spectral_morph_amount_.get(), distortion_amount_.get() });
 
-  int morph_y = getHeight() - knob_section_height + widget_margin;
-  Rectangle<int> spectral_normal_bounds(spectral_morph_amount_->getX(), morph_y,
-                                        spectral_morph_amount_->getWidth(), knob_section_height - 2 * widget_margin);
-  Rectangle<int> spectral_label_bounds = getLabelBackgroundBounds(spectral_normal_bounds);
+  // the morph and warp type selectors live in each knob's label strip
+  Rectangle<int> spectral_bounds(spectral_morph_amount_->getX(), y + widget_margin,
+                                 spectral_morph_amount_->getWidth(), knob_section_height - 2 * widget_margin);
+  Rectangle<int> spectral_label_bounds = getLabelBackgroundBounds(spectral_bounds);
   int browse_width = spectral_label_bounds.getHeight();
   int browse_y = spectral_label_bounds.getY();
+
   prev_spectral_->setBounds(spectral_morph_amount_->getX(), browse_y, browse_width, browse_width);
   next_spectral_->setBounds(spectral_morph_amount_->getRight() - browse_width, browse_y,
                             browse_width, browse_width);
-
-  prev_distortion_->setBounds(distortion_amount_->getX(), browse_y, browse_width, browse_width);
-  next_distortion_->setBounds(distortion_amount_->getRight() - browse_width, browse_y,
-                              browse_width, browse_width);
-
   spectral_morph_type_text_->setBounds(spectral_label_bounds);
   spectral_morph_type_text_->setTextSize(label_text_height);
   int spectral_menu_x = prev_spectral_->getRight();
-  spectral_morph_type_selector_->setBounds(spectral_menu_x, prev_spectral_->getY(),
-                                           next_spectral_->getX() - spectral_menu_x, prev_spectral_->getHeight());
+  spectral_morph_type_selector_->setBounds(spectral_menu_x, browse_y,
+                                           next_spectral_->getX() - spectral_menu_x, browse_width);
 
-  Rectangle<int> distortion_normal_bounds(distortion_amount_->getX(), morph_y,
-                                          distortion_amount_->getWidth(), knob_section_height - 2 * widget_margin);
-  distortion_type_text_->setBounds(getLabelBackgroundBounds(distortion_normal_bounds));
+  Rectangle<int> distortion_bounds(distortion_amount_->getX(), y + widget_margin,
+                                   distortion_amount_->getWidth(), knob_section_height - 2 * widget_margin);
+  Rectangle<int> distortion_label_bounds = getLabelBackgroundBounds(distortion_bounds);
+  prev_distortion_->setBounds(distortion_amount_->getX(), browse_y, browse_width, browse_width);
+  next_distortion_->setBounds(distortion_amount_->getRight() - browse_width, browse_y,
+                              browse_width, browse_width);
+  distortion_type_text_->setBounds(distortion_label_bounds);
   distortion_type_text_->setTextSize(label_text_height);
   int distortion_menu_x = prev_distortion_->getRight();
-  distortion_type_selector_->setBounds(distortion_menu_x, prev_distortion_->getY(),
-                                       next_distortion_->getX() - distortion_menu_x, prev_distortion_->getHeight());
+  distortion_type_selector_->setBounds(distortion_menu_x, browse_y,
+                                       next_distortion_->getX() - distortion_menu_x, browse_width);
 
-  distortion_phase_->setBounds(wavetable_->getX() - widget_margin,
-                               wavetable_->getBottom() - slider_overlap + widget_margin,
-                               wavetable_->getWidth() + 2 * widget_margin, slider_width);
-
-  int destination_x = level_pan_x + widget_margin;
-  int destination_y = getHeight() - label_height - widget_margin;
-  destination_selector_->setBounds(destination_x, destination_y, top_row_width, label_height);
+  // routing destination along the bottom edge
+  int destination_y = h - label_height - widget_margin;
+  destination_selector_->setBounds(widget_margin, destination_y, inner_width, label_height);
   destination_text_->setBounds(destination_selector_->getBounds());
   destination_text_->setTextSize(label_text_height);
-
-  prev_destination_->setBounds(destination_x, destination_y, browse_width, browse_width);
-  next_destination_->setBounds(destination_x + top_row_width - browse_width, destination_y,
-                               browse_width, browse_width);
+  prev_destination_->setBounds(widget_margin, destination_y, browse_width, browse_width);
+  next_destination_->setBounds(w - widget_margin - browse_width, destination_y, browse_width, browse_width);
 
   ttwt_overlay_.setRounding(findValue(Skin::kWidgetRoundedCorner));
   ttwt_overlay_.setBounds(wavetable_->getBounds());

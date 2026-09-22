@@ -93,7 +93,7 @@ FilterSection::FilterSection(String name, String suffix) :
 
   cutoff_ = std::make_unique<SynthSlider>("filter_" + number + "_cutoff");
   addSlider(cutoff_.get());
-  cutoff_->setSliderStyle(Slider::LinearBar);
+  cutoff_->setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
   cutoff_->setPopupPlacement(BubbleComponent::below);
   cutoff_->setModulationPlacement(BubbleComponent::above);
   cutoff_->setPopupPrefix("Cutoff: ");
@@ -101,7 +101,7 @@ FilterSection::FilterSection(String name, String suffix) :
 
   formant_x_ = std::make_unique<SynthSlider>("filter_" + number + "_formant_x");
   addSlider(formant_x_.get());
-  formant_x_->setSliderStyle(Slider::LinearBar);
+  formant_x_->setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
   formant_x_->setPopupPlacement(BubbleComponent::below);
   formant_x_->setModulationPlacement(BubbleComponent::above);
   formant_x_->setPopupPrefix("Formant X: ");
@@ -114,7 +114,7 @@ FilterSection::FilterSection(String name, String suffix) :
   addSlider(blend_.get());
   blend_->snapToValue(true, 1.0);
   blend_->setBipolar(true);
-  blend_->setSliderStyle(Slider::LinearBar);
+  blend_->setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
   blend_->setPopupPlacement(BubbleComponent::above);
   blend_->setPopupPrefix("Blend: ");
 
@@ -128,20 +128,20 @@ FilterSection::FilterSection(String name, String suffix) :
   addSlider(formant_transpose_.get());
   formant_transpose_->snapToValue(true, 0.0);
   formant_transpose_->setBipolar(true);
-  formant_transpose_->setSliderStyle(Slider::LinearBar);
+  formant_transpose_->setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
   formant_transpose_->setPopupPlacement(BubbleComponent::above);
   formant_transpose_->setPopupPrefix("Formant Transpose: ");
 
   resonance_ = std::make_unique<SynthSlider>("filter_" + number + "_resonance");
   addSlider(resonance_.get());
-  resonance_->setSliderStyle(Slider::LinearBarVertical);
+  resonance_->setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
   resonance_->setPopupPlacement(BubbleComponent::right);
   resonance_->setModulationPlacement(BubbleComponent::left);
   resonance_->setPopupPrefix("Resonance: ");
 
   formant_y_ = std::make_unique<SynthSlider>("filter_" + number + "_formant_y");
   addSlider(formant_y_.get());
-  formant_y_->setSliderStyle(Slider::LinearBarVertical);
+  formant_y_->setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
   formant_y_->setPopupPlacement(BubbleComponent::right);
   formant_y_->setModulationPlacement(BubbleComponent::left);
   formant_y_->setPopupPrefix("Formant Y: ");
@@ -271,6 +271,14 @@ void FilterSection::paintBackground(Graphics& g) {
   SynthSection::paintBackground(g);
   setLabelFont(g);
   drawLabelForComponent(g, TRANS("MIX"), mix_.get());
+  // cutoff, resonance and blend are knobs in this layout, so they need labels
+  // like the rest of the row rather than the sliders' inline readouts
+  drawLabelForComponent(g, TRANS("CUTOFF"), cutoff_.get());
+  drawLabelForComponent(g, TRANS("RES"), resonance_.get());
+  drawLabelForComponent(g, TRANS("BLEND"), blend_.get());
+  drawLabelBackgroundForComponent(g, cutoff_.get());
+  drawLabelBackgroundForComponent(g, resonance_.get());
+  drawLabelBackgroundForComponent(g, blend_.get());
 
   int title_width = getTitleWidth();
   int blend_label_padding_y = size_ratio_ * kBlendLabelPaddingY;
@@ -306,52 +314,44 @@ void FilterSection::paintBackground(Graphics& g) {
 }
 
 void FilterSection::positionTopBottom() {
+  // Serum-style column: the response curve fills the top, two rows of knobs
+  // sit under it, and the source routing runs along the bottom as a row of
+  // small buttons.
   int title_width = getTitleWidth();
   int knob_section_height = getKnobSectionHeight();
-  int slider_width = getSliderWidth();
-  int blend_label_width = size_ratio_ * kBlendLabelWidth;
   int widget_margin = getWidgetMargin();
+  int w = getWidth();
+  int h = getHeight();
 
-  int slider_overlap = getSliderOverlap();
-  int slider_overlap_space = getSliderOverlapWithSpace();
-  int response_width = getWidth() - slider_width + slider_overlap + slider_overlap_space - 2 * widget_margin;
-  int response_y = title_width + slider_width - slider_overlap_space - slider_overlap;
-  int response_height = getHeight() - 2 * slider_width -
-                        title_width - knob_section_height + 2 * slider_overlap_space + 2 * slider_overlap;
+  int routing_height = knob_section_height * 0.55f;
+  int knob_rows_height = 2 * knob_section_height;
+  int response_y = title_width + widget_margin;
+  int response_height = h - response_y - knob_rows_height - routing_height - widget_margin;
+  response_height = std::max(response_height, knob_section_height / 2);
 
-  int blend_y = title_width - slider_overlap;
-  blend_->setBounds(blend_label_width - widget_margin, blend_y,
-                    getWidth() - 2 * (blend_label_width - widget_margin), slider_width);
+  filter_response_->setBounds(widget_margin, response_y, w - 2 * widget_margin, response_height);
 
-  filter_response_->setBounds(widget_margin, response_y, response_width, response_height);
-  int resonance_x = filter_response_->getRight() - slider_overlap + widget_margin;
-  resonance_->setBounds(resonance_x, response_y - widget_margin, slider_width, response_height + 2 * widget_margin);
-  int cutoff_y = filter_response_->getBottom() - slider_overlap + widget_margin;
-  cutoff_->setBounds(0, cutoff_y, response_width + 2 * widget_margin, slider_width);
+  int knob_y = filter_response_->getBottom() + widget_margin;
+  placeKnobsInArea(Rectangle<int>(0, knob_y, w, knob_section_height),
+                   { cutoff_.get(), resonance_.get(), blend_.get() });
+  placeKnobsInArea(Rectangle<int>(0, knob_y + knob_section_height, w, knob_section_height),
+                   { drive_.get(), mix_.get(), keytrack_.get() });
 
-  float component_width = getWidth() / 5.0f;
-  int knob_y = getHeight() - knob_section_height;
+  // which sources feed this filter, mirroring Serum's S / A / B / C / N row
+  int routing_y = h - routing_height + widget_margin;
+  int button_height = routing_height - 2 * widget_margin;
+  int num_buttons = 5;
+  int button_width = (w - (num_buttons + 1) * widget_margin) / num_buttons;
 
-  int inputs_width = 2 * component_width;
-  int internal_margin = widget_margin / 2;
-  int input_width = (inputs_width - 2 * widget_margin - internal_margin) / 2;
-  float input_height = (knob_section_height - 2 * (widget_margin + internal_margin)) / 3.0f;
-  int osc_y = knob_y + widget_margin;
+  Button* routing[] = { filter_input_.get(), osc1_input_.get(), osc2_input_.get(),
+                        osc3_input_.get(), sample_input_.get() };
+  for (int i = 0; i < num_buttons; ++i) {
+    int x = widget_margin + i * (button_width + widget_margin);
+    routing[i]->setBounds(x, routing_y, button_width, button_height);
+  }
 
-  osc1_input_->setBounds(widget_margin, osc_y, input_width, input_height);
-  osc2_input_->setBounds(inputs_width - widget_margin - input_width, osc_y, input_width, input_height);
-
-  int other_y = knob_y + (knob_section_height - input_height) / 2.0f;
-  osc3_input_->setBounds(widget_margin, other_y, input_width, input_height);
-  sample_input_->setBounds(inputs_width - widget_margin - input_width, other_y, input_width, input_height);
-
-  int filter_x = (inputs_width - input_width) / 2;
-  int filter_y = getHeight() - input_height - widget_margin;
-  filter_input_->setBounds(filter_x, filter_y, input_width, input_height);
-
-  int knobs_x = 2.0f * component_width - widget_margin;
-  Rectangle<int> knobs_area(knobs_x, knob_y, getWidth() - knobs_x, knob_section_height);
-  placeKnobsInArea(knobs_area, { drive_.get(), mix_.get(), keytrack_.get() });
+  preset_selector_->setBounds(widget_margin, widget_margin,
+                              w - 2 * widget_margin, title_width - 2 * widget_margin);
 }
 
 void FilterSection::positionLeftRight() {

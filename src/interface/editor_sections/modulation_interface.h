@@ -29,6 +29,9 @@ struct SynthGuiData;
 
 class ModulationInterface  : public SynthSection, public ModulationTabSelector::Listener {
   public:
+    // share of the modulation strip's width given to the envelopes, the rest
+    // going to the LFOs beside them
+    static constexpr float kEnvelopeWidthRatio = 0.48f;
     static constexpr int kMinEnvelopeModulationsToShow = 3;
     static constexpr int kMinLfoModulationsToShow = 4;
     static constexpr int kMinRandomModulationsToShow = 2;

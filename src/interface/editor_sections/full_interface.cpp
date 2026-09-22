@@ -399,6 +399,9 @@ void FullInterface::resized() {
 
   ScopedLock lock(open_gl_critical_section_);
   static constexpr int kTopHeight = 48;
+  // share of the working area given to the oscillator/effect strip, the rest
+  // going to the envelopes and LFOs beneath it
+  static constexpr float kSynthesisHeightRatio = 0.56f;
 
   if (effects_interface_ == nullptr)
     return;
@@ -443,24 +446,28 @@ void FullInterface::resized() {
   int keyboard_section_height = knob_section_height * 0.7f;
   int voice_height = height - top_height - keyboard_section_height;
 
-  int section_one_width = 350 * ratio;
-  int section_two_width = section_one_width;
-  int audio_width = section_one_width + section_two_width + padding;
-  int modulation_width = width - audio_width - extra_mod_width - 4 * voice_padding;
+  // The tabbed audio sections span the full width as a strip across the top,
+  // with modulation underneath them, rather than modulation occupying the
+  // right-hand third. Every tab (oscillators, effects, matrix, master) shares
+  // that top area, so the envelopes and LFOs stay put as you switch tabs.
+  int audio_width = width - (main_x - left) - voice_padding;
+  int modulation_width = audio_width;
+
+  int voice_y = top + height - knob_section_height - keyboard_section_height;
+  int available_height = voice_y - (top + top_height) - padding;
+  int synth_height = available_height * kSynthesisHeightRatio;
+  int modulation_height = available_height - synth_height - padding;
 
   header_->setTabOffset(extra_mod_width + 2 * voice_padding);
   header_->setBounds(left, top, width, top_height);
-  Rectangle<int> main_bounds(main_x, top + top_height, audio_width, voice_height);
+  Rectangle<int> main_bounds(main_x, top + top_height, audio_width, synth_height);
 
   if (synthesis_interface_)
     synthesis_interface_->setBounds(main_bounds);
   effects_interface_->setBounds(main_bounds.withRight(main_bounds.getRight() + voice_padding));
   modulation_matrix_->setBounds(main_bounds);
-  int modulation_height = voice_height - knob_section_height - padding;
-  modulation_interface_->setBounds(main_bounds.getRight() + voice_padding,
-                                   main_bounds.getY(), modulation_width, modulation_height);
-
-  int voice_y = top + height - knob_section_height - keyboard_section_height;
+  modulation_interface_->setBounds(main_x, main_bounds.getBottom() + padding,
+                                   modulation_width, modulation_height);
 
   int portamento_width = 4 * (int)findValue(Skin::kModulationButtonWidth);
   int portamento_x = modulation_interface_->getRight() - portamento_width;
@@ -487,7 +494,8 @@ void FullInterface::resized() {
   download_section_->setBounds(bounds);
 
   Rectangle<int> browse_bounds(main_bounds.getX(), main_bounds.getY(),
-                               width - main_bounds.getX(), main_bounds.getHeight());
+                               width - main_bounds.getX(),
+                               modulation_interface_->getBottom() - main_bounds.getY());
   preset_browser_->setBounds(browse_bounds);
   bank_exporter_->setBounds(browse_bounds);
   SynthSection::resized();
