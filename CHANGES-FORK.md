@@ -36,6 +36,18 @@ Upstream's terms forbid builds from connecting to `vital.audio`,
 Verified against the built binary: no `vital.audio`, `account.vital` or
 `store.vital` strings remain.
 
+## Interface restyle (2026-09-22)
+
+The synthesis engine is still entirely unmodified. These changes are cosmetic.
+
+| File | Change |
+| --- | --- |
+| `default.vitalskin` | regenerated: graphite chassis in place of the warm grey, azure primary in place of the violet, cooled neutrals, squarer corners, and the value ring moved outside a smaller knob body |
+| `tools/make-skin.py` | **new** — generates the skin from a palette map and per-section overrides, then regenerates the JUCE `BinaryData` blob, so the look stays data-driven rather than hardcoded |
+| `src/interface/editor_components/synth_slider.cpp` | `drawRotaryShadow` paints a bevelled cylinder with a rim highlight and tick marks around the value ring, instead of a flat disc. All colours derive from the skin's existing body colour. |
+| `standalone/JuceLibraryCode/JuceHeader.h`, `plugin/…` | `projectName` changed from `Vial` to `Essential`, which is what the window title reads from |
+| `src/interface/editor_sections/*` | remaining user-visible and thread-name strings saying "Vial" now say "Essential" |
+
 ## What was deliberately NOT changed
 
 * Every copyright header. They stay exactly as Matt Tytel wrote them.
