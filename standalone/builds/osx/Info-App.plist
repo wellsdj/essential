@@ -23,11 +23,11 @@
     <key>CFBundleIconFile</key>
     <string></string>
     <key>CFBundleIdentifier</key>
-    <string>audio.vital.standalone</string>
+    <string>com.wellsdj.essential</string>
     <key>CFBundleName</key>
-    <string>Vial</string>
+    <string>Essential</string>
     <key>CFBundleDisplayName</key>
-    <string>Vial</string>
+    <string>Essential</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleSignature</key>

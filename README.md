@@ -1,27 +1,59 @@
-# Vital
-Vital is a spectral warping wavetable synthesizer. This is the source.
+# Essential
 
-This repository is updated on a delay after binary releases.
+**Essential is a fork of [Vital](https://github.com/mtytel/vital), a spectral
+warping wavetable synthesiser created by Matt Tytel.**
 
-## Code Licensing
-If you are making a proprietary or closed source app and would like to use Vital's source code, contact licensing@vital.audio for non GPLv3 licensing options.
+All of the synthesis engine and interface work here is his. This fork exists
+only to build and distribute the GPLv3 source under a name that does not use
+his trademarks, as his licence terms require. If you want the real thing, with
+presets, support and a wavetable editor that talks to his service, get it from
+[vital.audio](https://vital.audio) — and consider paying for it.
 
-## Installing
-Create an account and download Vital at [vital.audio](https://vital.audio)
+Upstream's own README is preserved as [README-upstream.md](README-upstream.md).
 
-## Issues
-Report bugs (e.g.non-code and non-compiling issues) to https://forum.vital.audio
+## Licence
 
-Feel free to report issues on building/compiling here but note that I'm not prioritizing them.
+**GPLv3**, inherited from upstream and unchanged — see [LICENSE](LICENSE).
 
-## Pull requests
-I will not take any pull requests.
+That is not a formality. It means:
 
-## What can you do with the source
-The source code is licensed under the GPLv3. If you download the source or create builds you must comply with that license.
+* Any binary you distribute must come with this source, under the GPLv3.
+* You cannot relicense it, and you cannot fold this code into a closed-source
+  or proprietary app.
+* **You cannot ship it on the iOS App Store.** The App Store terms and the
+  GPLv3 contradict each other, and upstream states this explicitly. The only
+  route to an App Store build is a paid licensing exception from
+  licensing@vital.audio.
+* You cannot use the names "Vital", "Vital Audio", "Tytel" or "Matt Tytel" to
+  market or name a build. Hence "Essential".
+* The presets bundled with the free version of Vital are under a separate
+  licence and are not redistributable. None are included here.
 
-### Things you can't do with this source
- - Do not create an app and distribute it on the iOS app store. The app store is not comptabile with GPLv3 and you'll only get an exception for this if you're paying for a GPLv3 exception for Vital's source (see Code Licensing above).
- - Do not use the name "Vital", "Vital Audio", "Tytel" or "Matt Tytel" for marketing or to name any distribution of binaries built with this source. This source code does not give you rights to infringe on trademarks.
- - Do not connect to any web service at https://vital.audio, https://account.vital.audio or https://store.vital.audio from your own builds. This is against the terms of using those sites.
- - Do not distribute the presets that come with the free version of Vital. They're under a separate license that does not allow redistribution.
+## Changes from upstream
+
+See [CHANGES-FORK.md](CHANGES-FORK.md) for the itemised list with dates, as
+GPLv3 section 5(a) requires. In summary: renamed the product and its data
+directories, changed the bundle identifier and company name, and compiled out
+the account/authentication code so builds never contact vital.audio.
+
+No synthesis, DSP or interface code has been altered.
+
+## Building (macOS)
+
+```bash
+xcodebuild -project standalone/builds/osx/Essential.xcodeproj \
+           -target "Essential - App" -configuration Release build
+```
+
+The app lands in `standalone/builds/osx/build/Release/Essential.app`. It is a
+universal binary (arm64 + x86_64) and is unsigned, so the first launch needs
+right-click → Open, or `xattr -dr com.apple.quarantine Essential.app`.
+
+Linux builds use the `Makefile`; Windows uses the Visual Studio projects under
+`standalone/builds/vs19`. Both are upstream's and untouched.
+
+## This is a desktop synthesiser
+
+Vital is C++ and JUCE, built for desktop plugin formats. There is an iOS target
+in `plugin/builds/iOS` for AUv3, but the GPLv3 blocks App Store distribution,
+so it is not a route to a phone app. A mobile synth needs a mobile codebase.

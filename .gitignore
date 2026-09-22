@@ -33,3 +33,7 @@ build
 Debug
 Profile
 Release
+
+# build artifacts
+standalone/builds/osx/build/
+plugin/builds/osx/build/
