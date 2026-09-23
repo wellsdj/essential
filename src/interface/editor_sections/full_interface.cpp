@@ -374,6 +374,21 @@ void FullInterface::redoBackground() {
   background_image_ = Image(Image::RGB, width, height, true);
   Graphics g(background_image_);
   paintBackground(g);
+
+  // Development aid: with ESSENTIAL_DUMP_BACKGROUND set to a path, write the
+  // rasterised interface out as a PNG. The whole static UI - panels, labels,
+  // dials - is baked into this one image, so dumping it verifies visual work
+  // exactly, without depending on window-server screen capture, which is
+  // unreliable for an OpenGL window. Inert unless the variable is set.
+  String dump_path = SystemStats::getEnvironmentVariable("ESSENTIAL_DUMP_BACKGROUND", "");
+  if (dump_path.isNotEmpty()) {
+    File dump_file(dump_path);
+    dump_file.deleteFile();
+    FileOutputStream dump_stream(dump_file);
+    PNGImageFormat png;
+    png.writeImageToStream(background_image_, dump_stream);
+  }
+
   background_.updateBackgroundImage(background_image_);
   background_.unlock();
 }

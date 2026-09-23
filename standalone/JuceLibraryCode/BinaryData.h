@@ -89,6 +89,12 @@ namespace BinaryData
     extern const char*   vital_word_ring_svg;
     const int            vital_word_ring_svgSize = 1888;
 
+    extern const char*   dial_png;
+    const int            dial_pngSize = 83764;
+
+    extern const char*   marble_jpg;
+    const int            marble_jpgSize = 76919;
+
     // Number of elements in the namedResourceList and originalFileNames arrays.
     const int namedResourceListSize = 27;
 

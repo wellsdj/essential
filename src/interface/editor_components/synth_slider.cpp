@@ -17,6 +17,7 @@
 #include "synth_slider.h"
 
 #include <cmath>
+#include <map>
 
 #include "skin.h"
 #include "fonts.h"
@@ -569,6 +570,51 @@ void SynthSlider::drawShadow(Graphics &g) {
   }
 }
 
+namespace {
+  // Fraction of the rendered dial image occupied by the metal. The image is
+  // wider than the knob so the baked contact shadow lives inside its alpha;
+  // see tools/make-assets.py, which defines the same constant.
+  constexpr float kDialMetalFraction = 0.74f;
+
+  /**
+   * The dial at an exact pixel size, cached.
+   *
+   * Built by repeated halving rather than one resample: JUCE has no mip
+   * pyramid, so taking the 512px source straight down to a 28px knob is an
+   * 18x minification that aliases the chrome ring into shimmering noise. Each
+   * halving is a clean box reduction, and the final step is never more than
+   * 2x, which bilinear handles well.
+   */
+  const Image& dialImage(int size) {
+    static CriticalSection dial_lock;
+    static std::map<int, Image> cache;
+    static Image source;
+    static bool decoded = false;
+
+    ScopedLock lock(dial_lock);
+    if (!decoded) {
+      decoded = true;
+      source = ImageCache::getFromMemory(BinaryData::dial_png, BinaryData::dial_pngSize);
+    }
+
+    auto found = cache.find(size);
+    if (found != cache.end())
+      return found->second;
+
+    if (!source.isValid() || size <= 0)
+      return cache.emplace(size, Image()).first->second;
+
+    Image scaled = source;
+    while (scaled.getWidth() / 2 >= size && scaled.getWidth() > 2)
+      scaled = scaled.rescaled(scaled.getWidth() / 2, scaled.getHeight() / 2,
+                               Graphics::highResamplingQuality);
+    if (scaled.getWidth() != size)
+      scaled = scaled.rescaled(size, size, Graphics::highResamplingQuality);
+
+    return cache.emplace(size, scaled).first->second;
+  }
+} // namespace
+
 void SynthSlider::drawRotaryShadow(Graphics &g) {
   Colour shadow_color = findColour(Skin::kShadow, true);
 
@@ -606,47 +652,33 @@ void SynthSlider::drawRotaryShadow(Graphics &g) {
 
     Rectangle<float> ellipse(center_x - body_radius, center_y - body_radius, 2.0f * body_radius, 2.0f * body_radius);
 
-    // Bevelled cylinder rather than a flat disc: light falls from the upper
-    // left, the lower right falls away, and a rim highlight catches the top
-    // edge. Every colour is derived from the skin's body colour, so reskinning
-    // still drives the whole knob.
-    Colour body_light = body.brighter(1.25f);
-    Colour body_mid = body.brighter(0.42f);
-    Colour body_dark = body.darker(0.40f);
+    // A rendered dial — black anodised cap, polished chrome collar, baked
+    // contact shadow — rather than gradients standing in for metal. It is
+    // blitted at its exact pixel size so there is no resampling here, and it
+    // is baked into the window's background image, so it costs nothing per
+    // frame. Only the indicator moves, and that is the shader's thumb.
+    int metal_diameter = juce::roundToInt(2.0f * body_radius);
+    int image_size = juce::roundToInt(metal_diameter / kDialMetalFraction);
+    const Image& dial = dialImage(image_size);
 
-    ColourGradient face(body_light, center_x - body_radius * 0.40f, center_y - body_radius * 0.55f,
-                        body_dark, center_x + body_radius * 0.50f, center_y + body_radius * 0.95f, true);
-    face.addColour(0.40, body_mid);
-    g.setGradientFill(face);
-    g.fillEllipse(ellipse);
-
-    // rim: a bright catch along the top, easing off rather than going black at
-    // the bottom, which otherwise reads as a heavy outline
-    ColourGradient rim(body.brighter(2.1f).withAlpha(0.80f), center_x, center_y - body_radius,
-                       body.darker(0.30f).withAlpha(0.55f), center_x, center_y + body_radius, false);
-    rim.addColour(0.55, body.brighter(0.30f).withAlpha(0.45f));
-    g.setGradientFill(rim);
-    g.drawEllipse(ellipse.reduced(0.5f), 1.1f);
-
-    // Tick marks outside the value ring. Skipped on the smallest knobs, where
-    // they would only add noise.
-    if (body_radius >= 11.0f) {
-      Colour tick_color = findColour(Skin::kRotaryArcUnselected, true).brighter(1.15f);
-      float tick_inner = radius + stroke_width * 0.5f + 2.5f;
-      float tick_outer = tick_inner + (body_radius >= 16.0f ? 5.0f : 3.5f);
-      int num_ticks = 11;
-      for (int i = 0; i < num_ticks; ++i) {
-        float t = i / (num_ticks - 1.0f);
-        float angle = -kRotaryAngle + t * 2.0f * kRotaryAngle;
-        bool major = (i == 0 || i == num_ticks - 1 || i == num_ticks / 2);
-        float sin_a = std::sin(angle);
-        float cos_a = std::cos(angle);
-        g.setColour(major ? tick_color.brighter(0.9f) : tick_color.withMultipliedAlpha(0.8f));
-        g.drawLine(center_x + sin_a * tick_inner, center_y - cos_a * tick_inner,
-                   center_x + sin_a * tick_outer, center_y - cos_a * tick_outer,
-                   major ? 2.0f : 1.4f);
-      }
+    if (dial.isValid()) {
+      g.setOpacity(1.0f);
+      g.drawImageAt(dial, juce::roundToInt(center_x - image_size * 0.5f),
+                          juce::roundToInt(center_y - image_size * 0.5f));
     }
+    else {
+      // Fallback if the image fails to decode: the drawn cylinder, so a broken
+      // resource degrades to the old look rather than to invisible knobs.
+      Colour body_light = body.brighter(1.25f);
+      Colour body_dark = body.darker(0.40f);
+      ColourGradient face(body_light, center_x - body_radius * 0.40f, center_y - body_radius * 0.55f,
+                          body_dark, center_x + body_radius * 0.50f, center_y + body_radius * 0.95f, true);
+      g.setGradientFill(face);
+      g.fillEllipse(ellipse);
+      g.setColour(body.brighter(1.4f).withAlpha(0.6f));
+      g.drawEllipse(ellipse.reduced(0.5f), 1.1f);
+    }
+
   }
 
   Path shadow_outline;
@@ -657,7 +689,7 @@ void SynthSlider::drawRotaryShadow(Graphics &g) {
   shadow_stroke.createStrokedPath(shadow_path, shadow_outline);
   if ((!findColour(Skin::kRotaryArcUnselected, true).isTransparent() && isActive()) ||
       (!findColour(Skin::kRotaryArcUnselectedDisabled, true).isTransparent() && !isActive())) {
-    g.setColour(shadow_color); 
+    g.setColour(shadow_color.withMultipliedAlpha(0.45f));
     g.fillPath(shadow_path);
   }
 

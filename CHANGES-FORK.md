@@ -62,6 +62,25 @@ Still cosmetic; no synthesis code touched.
 | `src/interface/editor_sections/modulation_interface.cpp/.h` | envelopes and LFOs side by side at full height instead of stacked in thirds |
 | `standalone/builds/osx/Info-App.plist` | added `NSMicrophoneUsageDescription`. JUCE's standalone opens an audio input on launch, and without the key macOS terminates the process outright (`__TCC_CRASHING_DUE_TO_PRIVACY_VIOLATION__`) rather than prompting |
 
+## Rendered dials (2026-09-23)
+
+Cosmetic; the synthesis engine remains untouched.
+
+| File | Change |
+| --- | --- |
+| `tools/make-assets.py` | **new** — renders the dial and a marble slab from seeded noise. Nothing is downloaded, so no third-party material enters the tree and the look is reproducible from source. |
+| `tools/binary_data.py` | **new** — the BinaryData literal/verify helpers, extended to embed binary resources. Every blob is decoded back and compared byte-for-byte before writing, and sizes are patched by matching the symbol, never by assuming the previous value. |
+| `tools/embed-assets.py` | **new** — embeds the assets into all three BinaryData copies (standalone, plugin, tests), idempotently. |
+| `assets/dial.png`, `assets/marble.jpg` | **new** — generated, not sourced. |
+| `*/JuceLibraryCode/BinaryData.{h,cpp}` | two resources added, 157 KB per target. The name/hash tables are deliberately left alone: they must stay length-consistent or `getNamedResourceOriginalFilename` reads past the end of the array, and every access in this codebase is through the extern symbol. |
+| `src/interface/editor_components/synth_slider.cpp` | `drawRotaryShadow` composites a rendered dial — black anodised cap, polished chrome collar, baked contact shadow — instead of filling gradients to imply metal. Sized images are cached and built by repeated halving, because JUCE has no mip pyramid and a single 18x minification aliases the chrome ring into noise. The drawn cylinder remains as a fallback if the resource fails to decode. Tick marks removed: beside a rendered dial they read as pen strokes around a photograph. |
+| `src/interface/editor_sections/full_interface.cpp` | `redoBackground` can dump the rasterised interface to a PNG when `ESSENTIAL_DUMP_BACKGROUND` is set. The entire static UI is baked into that one image, so visual work can be verified exactly without screen capture, which is unreliable for an OpenGL window. Inert unless the variable is set. |
+
+Only the indicator on a dial of this kind rotates — the collar and cap do not —
+so no multi-frame filmstrip is needed. The rotating pointer remains the existing
+GPU thumb, and the dial costs nothing per frame: it is baked into the window's
+background image alongside the rest of the static interface.
+
 ## What was deliberately NOT changed
 
 * Every copyright header. They stay exactly as Matt Tytel wrote them.
