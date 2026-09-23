@@ -18,7 +18,7 @@ namespace BinaryData
     const int            Pythagorean_sclSize = 108;
 
     extern const char*   default_vitalskin;
-    const int            default_vitalskinSize = 11046;
+    const int            default_vitalskinSize = 13803;
 
     extern const char*   DroidSansMono_ttf;
     const int            DroidSansMono_ttfSize = 119380;
@@ -97,6 +97,9 @@ namespace BinaryData
 
     extern const char*   wood_jpg;
     const int            wood_jpgSize = 338351;
+
+    extern const char*   marble_dark_jpg;
+    const int            marble_dark_jpgSize = 404074;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
     const int namedResourceListSize = 27;

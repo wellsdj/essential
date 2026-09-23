@@ -81,7 +81,7 @@ void PopupDisplay::resized() {
 
   body_.setBounds(bounds);
   body_.setRounding(rounding);
-  body_.setColor(findColour(Skin::kBody, true));
+  body_.setColor(findColour(Skin::kPopupBackground, true));
 
   border_.setBounds(bounds);
   border_.setRounding(rounding);
@@ -89,7 +89,7 @@ void PopupDisplay::resized() {
   border_.setColor(findColour(Skin::kBorder, true));
 
   text_.setBounds(bounds);
-  text_.setColor(findColour(Skin::kBodyText, true));
+  text_.setColor(findColour(Skin::kTextComponentText, true));
 }
 
 void PopupDisplay::setContent(const std::string& text, Rectangle<int> bounds,
@@ -310,12 +310,12 @@ void PopupList::renderOpenGlComponents(OpenGlWrapper& open_gl, bool animate) {
     if (show_selected_)
       hover_.setColor(findColour(Skin::kLightenScreen, true));
     else
-      hover_.setColor(findColour(Skin::kWidgetPrimary1, true).darker(0.8f));
+      hover_.setColor(findColour(Skin::kWidgetPrimary1, true).withAlpha(0.20f));
     hover_.render(open_gl, animate);
   }
   if (selected_ >= 0 && show_selected_) {
     moveQuadToRow(highlight_, selected_);
-    highlight_.setColor(findColour(Skin::kWidgetPrimary1, true).darker(0.8f));
+    highlight_.setColor(findColour(Skin::kWidgetPrimary1, true).withAlpha(0.32f));
     highlight_.render(open_gl, animate);
   }
 
@@ -897,7 +897,7 @@ void SelectionList::renderOpenGlComponents(OpenGlWrapper& open_gl, bool animate)
   int selected_index = getSelectedIndex();
   if (selected_index >= 0) {
     moveQuadToRow(highlight_, selected_index, y_offset);
-    highlight_.setColor(findColour(Skin::kWidgetPrimary1, true).darker(0.8f));
+    highlight_.setColor(findColour(Skin::kWidgetPrimary1, true).withAlpha(0.32f));
     highlight_.render(open_gl, animate);
   }
 
@@ -959,7 +959,7 @@ void SinglePopupSelector::resized() {
 
   body_.setBounds(bounds);
   body_.setRounding(findValue(Skin::kBodyRounding));
-  body_.setColor(findColour(Skin::kBody, true));
+  body_.setColor(findColour(Skin::kPopupBackground, true));
 
   border_.setBounds(bounds);
   border_.setRounding(findValue(Skin::kBodyRounding));
@@ -1019,7 +1019,7 @@ void DualPopupSelector::resized() {
 
   body_.setBounds(bounds);
   body_.setRounding(findValue(Skin::kBodyRounding));
-  body_.setColor(findColour(Skin::kBody, true));
+  body_.setColor(findColour(Skin::kPopupBackground, true));
 
   border_.setBounds(bounds);
   border_.setRounding(findValue(Skin::kBodyRounding));
@@ -1145,7 +1145,7 @@ void PopupBrowser::resized() {
 
   body_.setBounds(browser_bounds_);
   body_.setRounding(findValue(Skin::kBodyRounding));
-  body_.setColor(findColour(Skin::kBody, true));
+  body_.setColor(findColour(Skin::kPopupBackground, true));
 
   border_.setBounds(browser_bounds_);
   border_.setRounding(findValue(Skin::kBodyRounding));

@@ -230,6 +230,7 @@ class FullInterface : public SynthSection, public AuthenticationSection::Listene
     Image background_image_;
     Image marble_scaled_;
     Image wood_slab_;
+    Image dark_scaled_;
     OpenGlBackground background_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FullInterface)

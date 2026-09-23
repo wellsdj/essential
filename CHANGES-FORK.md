@@ -111,6 +111,16 @@ column layout made that strip the full window width, so toggling one source
 re-rasterised all six columns. The sources are disjoint now, so only the
 affected column is repainted.
 
+## Marble panels, dark slab, popup contrast (2026-09-23)
+
+| File | Change |
+| --- | --- |
+| `assets/source/marble_dark.png` | **new** — supplied by the project owner. |
+| `src/interface/editor_sections/synth_section.cpp/.h` | `paintBody` samples a marble slab clipped to the body rounding instead of filling a flat colour, offset by the section's position within the painted root so the veining runs continuously beneath the whole instrument rather than restarting in each panel. Effect sections take the dark slab. The slabs are handed to every section at once by `setPanelSlabs`, already scaled to the background image. |
+| `src/interface/editor_sections/full_interface.cpp/.h` | scales and supplies both slabs. |
+| `src/interface/editor_sections/popup_browser.cpp` | popup rows were tinted with the accent darkened almost to black, which worked when item text was light; on a light instrument the text is dark, so selected rows became dark-on-dark and unreadable. Rows now take a light wash of the accent. Popups also draw their own background colour rather than inheriting `Skin::kBody` from whichever section opened them, which could be transparent or dark. |
+| `tools/make-skin.py` | `Body` is a translucent veil over the slab rather than an opaque fill; the ten effect sections invert to a dark veil with light type. |
+
 ## What was deliberately NOT changed
 
 * Every copyright header. They stay exactly as Matt Tytel wrote them.

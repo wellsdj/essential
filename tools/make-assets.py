@@ -223,6 +223,11 @@ def prepare_marble(width=2048, height=1200):
     return _fit(src, width, height)
 
 
+def prepare_marble_dark(width=2048, height=1200):
+    src = Image.open(ASSETS / "source" / "marble_dark.png").convert("RGB")
+    return _fit(src, width, height)
+
+
 def prepare_wood(width=2048, height=683):
     src = Image.open(ASSETS / "source" / "wood.png").convert("RGB")
     return _fit(src, width, height)
@@ -260,6 +265,14 @@ def main():
         print(f"marble {marble.size[0]}x{marble.size[1]} RGB   {size / 1024:.0f} KB  -> {path.relative_to(ROOT)}")
         if size > 520 * 1024:
             print("  WARNING: marble is larger than budget (520 KB)", file=sys.stderr)
+
+    if args.marble or both:
+        dark = prepare_marble_dark()
+        path = ASSETS / "marble_dark.jpg"
+        if not args.check:
+            dark.save(path, quality=84, optimize=True, subsampling=2, progressive=False)
+        size = path.stat().st_size if path.exists() else 0
+        print(f"dark   {dark.size[0]}x{dark.size[1]} RGB   {size / 1024:.0f} KB  -> {path.relative_to(ROOT)}")
 
     if args.wood or both:
         wood = prepare_wood()

@@ -178,9 +178,45 @@ void SynthSection::paintContainer(Graphics& g) {
   g.restoreState();
 }
 
+Image SynthSection::panel_slab_light_;
+Image SynthSection::panel_slab_dark_;
+
+void SynthSection::setPanelSlabs(const Image& light, const Image& dark) {
+  panel_slab_light_ = light;
+  panel_slab_dark_ = dark;
+}
+
 void SynthSection::paintBody(Graphics& g, Rectangle<int> bounds) {
+  float rounding = findValue(Skin::kBodyRounding);
+
+  // The effect sections take the dark slab; everything else the light one.
+  bool dark_panel = skin_override_ >= Skin::kAllEffects && skin_override_ <= Skin::kReverb;
+  const Image& slab = dark_panel ? panel_slab_dark_ : panel_slab_light_;
+
+  if (slab.isValid()) {
+    // Offset of this section within the painted root, accumulated up the
+    // parent chain. Sampling the slab at that offset keeps the veining
+    // continuous across panels instead of restarting in each one.
+    Point<int> offset(0, 0);
+    for (const Component* c = this; c->getParentComponent() != nullptr; c = c->getParentComponent())
+      offset += Point<int>(c->getX(), c->getY());
+
+    Path rounded;
+    rounded.addRoundedRectangle(bounds.toFloat(), rounding);
+
+    g.saveState();
+    g.reduceClipRegion(rounded);
+    g.drawImageAt(slab, -offset.getX(), -offset.getY());
+    // A wash over the stone so type stays readable and the panel reads as a
+    // cut slab sitting on the chassis rather than a window through to it.
+    g.setColour(findColour(Skin::kBody, true));
+    g.fillPath(rounded);
+    g.restoreState();
+    return;
+  }
+
   g.setColour(findColour(Skin::kBody, true));
-  g.fillRoundedRectangle(bounds.toFloat(), findValue(Skin::kBodyRounding));
+  g.fillRoundedRectangle(bounds.toFloat(), rounding);
 }
 
 void SynthSection::paintBorder(Graphics& g, Rectangle<int> bounds) {

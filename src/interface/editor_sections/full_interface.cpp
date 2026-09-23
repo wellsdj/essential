@@ -449,6 +449,21 @@ void FullInterface::redoBackground() {
   if (!wood_slab_.isValid())
     wood_slab_ = ImageCache::getFromMemory(BinaryData::wood_jpg, BinaryData::wood_jpgSize);
 
+  // The dark slab backs the effect panels. Scaled to the same size as the
+  // light one so both sample continuously beneath the interface.
+  if (dark_scaled_.getWidth() != width || dark_scaled_.getHeight() != height) {
+    Image dark = ImageCache::getFromMemory(BinaryData::marble_dark_jpg, BinaryData::marble_dark_jpgSize);
+    if (dark.isValid()) {
+      dark_scaled_ = Image(Image::RGB, width, height, false);
+      Graphics dark_graphics(dark_scaled_);
+      dark_graphics.setImageResamplingQuality(Graphics::highResamplingQuality);
+      dark_graphics.drawImageWithin(dark, 0, 0, width, height,
+                                    RectanglePlacement::centred | RectanglePlacement::fillDestination);
+      ImageCache::releaseUnusedImages();
+    }
+  }
+  SynthSection::setPanelSlabs(marble_scaled_, dark_scaled_);
+
   Graphics g(background_image_);
   paintBackground(g);
 

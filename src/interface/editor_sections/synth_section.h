@@ -204,6 +204,14 @@ class SynthSection : public Component, public Slider::Listener,
     virtual void paintBackground(Graphics& g);
     virtual void setSkinValues(const Skin& skin, bool top_level);
     void setSkinOverride(Skin::SectionOverride skin_override) { skin_override_ = skin_override; }
+
+    /**
+     * Hands the panel surfaces to every section at once. They are scaled to the
+     * background image, so a panel samples the same stone the chassis does and
+     * the veining runs continuously beneath the whole instrument rather than
+     * restarting in each panel.
+     */
+    static void setPanelSlabs(const Image& light, const Image& dark);
     virtual void repaintBackground();
     void showPopupBrowser(SynthSection* owner, Rectangle<int> bounds, std::vector<File> directories,
                           String extensions, std::string passthrough_name, std::string additional_folders_name);
@@ -357,6 +365,8 @@ class SynthSection : public Component, public Slider::Listener,
     std::unique_ptr<OffOverlay> off_overlay_;
 
     Skin::SectionOverride skin_override_;
+    static Image panel_slab_light_;
+    static Image panel_slab_dark_;
     float size_ratio_;
     bool active_;
     bool sideways_heading_;
