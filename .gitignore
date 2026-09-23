@@ -37,3 +37,4 @@ Release
 # build artifacts
 standalone/builds/osx/build/
 plugin/builds/osx/build/
+tools/__pycache__/

@@ -23,40 +23,40 @@ SKIN = ROOT / "default.vitalskin"
 # carries one, so translucent variants follow automatically.
 PALETTE = {
     # brand / primary: violet becomes azure
-    "aa88ff": "4fb6ff",
-    "bda3ff": "8ad3ff",
-    "906de9": "2b8fe0",
-    "ba9fff": "8ad3ff",
-    "9f88ff": "4fb6ff",
+    "aa88ff": "2f86e0",
+    "bda3ff": "5aa6ea",
+    "906de9": "1f6cbd",
+    "ba9fff": "5aa6ea",
+    "9f88ff": "2f86e0",
     # modulation + envelopes: teal family, cooled and brightened
-    "64ffda": "3fe3d0",
-    "1de9b6": "25d9a8",
-    "1de952": "2fdc82",
-    "1dc2e9": "35bdf0",
-    "00e686": "23e08a",
+    "64ffda": "15b39c",
+    "1de9b6": "12a582",
+    "1de952": "1f9e58",
+    "1dc2e9": "1f8fb5",
+    "00e686": "0f9c5e",
     # effects
-    "ff99e9": "ff7ad9",   # delay
-    "ff5252": "ff5c6c",   # distortion
-    "ffb74d": "ffb03c",   # filter
-    "fff6e1": "f2e9d8",   # equaliser
-    "ffd740": "ffd93d",   # flanger
-    "40cfff": "3fd0ff",   # phaser
-    "8fa0ff": "8aa2ff",   # reverb
-    "ff8180": "ff7d8f",
-    "ea1616": "ff4757",   # modulation drag
+    "ff99e9": "c94fa8",   # delay
+    "ff5252": "d4414f",   # distortion
+    "ffb74d": "c8821a",   # filter
+    "fff6e1": "9c8f76",   # equaliser
+    "ffd740": "c9a017",   # flanger
+    "40cfff": "2b93c4",   # phaser
+    "8fa0ff": "6274cf",   # reverb
+    "ff8180": "c96470",
+    "ea1616": "cc2b3b",   # modulation drag
     # neutral greys, cooled to sit on the bluer chassis
-    "848789": "7d93a8",
-    "848686": "6a7f93",
-    "939699": "9ab2c8",
-    "aaacad": "a8c0d6",
-    "4c4f52": "1e2a37",
-    "262a2e": "0e151d",
-    "2c3033": "141d27",
-    "3e4245": "121a24",
-    "1d2125": "0b1118",
-    "606265": "44566a",
-    "d3d6d6": "d6e4f2",
-    "dfdfdf": "eaf3fb",
+    "848789": "6d7681",
+    "848686": "7c848e",
+    "939699": "525b66",
+    "aaacad": "434c57",
+    "4c4f52": "d5d1cb",
+    "262a2e": "e6e2dc",
+    "2c3033": "f1eeea",
+    "3e4245": "e9e5e0",
+    "1d2125": "11161c",
+    "606265": "9aa3ae",
+    "d3d6d6": "2b3138",
+    "dfdfdf": "14181d",
 }
 
 # Applied after the palette so a section can opt out of a global remap.
@@ -74,57 +74,78 @@ SECTIONS = {
 
 # Grounds and geometry: a deeper, bluer chassis with softer corners.
 GLOBAL = {
-    # --- chassis: neutral graphite panels, the way a hardware rack reads,
-    # rather than Vital's warm grey or a saturated blue
-    "Background": "ff141517",
-    "Body": "ff232629",
-    "Body Heading Background": "ff1a1c1f",
-    "Body Text": "ffc8ced6",
-    "Heading Text": "ffe9eef4",
-    "Widget Background": "ff0f1113",
-    "Popup Background": "ff1a1c1f",
-    "Popup Selector Background": "ff26292d",
-    "Text Component Background": "ff1d2023",
-    "Text Editor Background": "ff1d2023",
-    "Modulation Button Unselected": "ff1d2023",
-    "Modulation Button Selected": "ff2e3339",
-    "Linear Slider Unselected": "ff121416",
-    "Label Background": "ff1a1c1f",
+    # --- chassis -----------------------------------------------------------
+    # The marble image is the real surface; this is only the fallback if it
+    # fails to decode, so it is a marble mid-tone rather than a colour anyone
+    # should see.
+    "Background": "ffece9e4",
 
-    # --- knobs
-    "Rotary Body": "ff3d444d",          # the bevel gradient is derived from this
-    "Rotary Body Border": "ff0a0b0d",
-    "Rotary Arc Unselected": "ff545c66",
-    "Rotary Arc Unselected Disabled": "ff2a2e33",
-    "Rotary Hand": "fff2f7fb",
+    # Panels are pale frosted stone, slightly translucent so the slab reads
+    # through them. JUCE composites this on the CPU into the background image,
+    # so translucency needs no GL change.
+    "Body": "f0f7f5f2",
+    "Body Heading Background": "ffe9e5e0",
+    "Border": "26000000",
 
-    "Icon Button Off": "ff8d96a1",
-    "Icon Button Off Hover": "ffc4ccd5",
-    "Icon Selector Icon": "ff8d96a1",
-    "Power Button Off": "ff4d545c",
-    "Linear Slider": "ff8d96a1",
-    "UI Button": "ff8d96a1",
-    "UI Button Hover": "ffabb4bf",
-    "UI Button Press": "ff4d545c",
-    "Shadow": "b3000000",
-    "Lighten Screen": "16ffffff",
-    "Overlay Screen": "44000000",
+    # --- type: dark on stone ------------------------------------------------
+    "Body Text": "ff2b3138",
+    "Heading Text": "ff14181d",
 
-    # --- geometry: the value ring moves outside a smaller body, and the
-    # panels square off, which is the bulk of the Serum-like change
-    "Knob Body Size": 28.0,
-    "Knob Arc Size": 36.0,
+    # --- displays stay dark -------------------------------------------------
+    # Wavetables, envelopes and LFO curves are luminous traces; they need a
+    # dark field to read against, exactly as they do on a light hardware panel.
+    "Widget Background": "ff11161c",
+    "Widget Center Line": "ff8e9aa6",
+
+    # --- interior controls, all opaque -------------------------------------
+    "Popup Background": "fff4f2ef",
+    "Popup Selector Background": "ffe6e2dc",
+    "Text Component Background": "fff1eeea",
+    "Text Component Text": "ff23282e",
+    "Text Editor Background": "fff1eeea",
+    "Modulation Button Unselected": "ffe6e2dc",
+    "Modulation Button Selected": "ffd3dae2",
+    "Linear Slider Unselected": "ffd5d1cb",
+    "Linear Slider": "ff6d7681",
+    "Label Background": "ffe9e5e0",
+    "Preset Text": "ff1b2026",
+
+    # --- knobs --------------------------------------------------------------
+    # Rotary Body is only the fallback colour; the rendered dial covers it.
+    "Rotary Body": "ff16191d",
+    "Rotary Body Border": "ff08090b",
+    "Rotary Arc Unselected": "ffc6c9cd",
+    "Rotary Arc Unselected Disabled": "ffdcdedf",
+    "Rotary Hand": "fff4f8fc",
+
+    # --- chrome, buttons, shadows ------------------------------------------
+    "Icon Button Off": "ff6d7681",
+    "Icon Button Off Hover": "ff434c57",
+    "Icon Selector Icon": "ff6d7681",
+    "Power Button Off": "ff9aa3ae",
+    "UI Button": "ff6d7681",
+    "UI Button Hover": "ff525b66",
+    "UI Button Press": "ff3a424c",
+    "UI Button Text": "fff7f9fb",
+    # Shadows on a light ground want to be soft and short, not the deep pools
+    # a dark chassis could carry.
+    "Shadow": "38161b21",
+    "Lighten Screen": "14ffffff",
+    "Overlay Screen": "59000000",
+
+    # --- geometry -----------------------------------------------------------
+    "Knob Body Size": 32.0,      # the chrome collar needs room to read
+    "Knob Arc Size": 41.0,       # keep the value ring clear of the collar
     "Knob Arc Thickness": 2.0,
-    "Knob Handle Length": 0.68,
-    "Knob Mod Amount Arc Size": 43.0,
-    "Knob Mod Meter Arc Size": 42.0,
-    "Knob Shadow Width": 3.0,
-    "Body Rounding": 3.0,
-    "Widget Rounded Corner": 3.0,
-    "Label Rounding": 2.0,
+    "Knob Handle Length": 0.42,  # a short witness line, not a full spoke
+    "Knob Shadow Width": 0.0,    # the dial carries its own contact shadow
+    "Body Rounding": 4.0,
+    "Widget Rounded Corner": 4.0,
+    "Label Rounding": 3.0,
     "Widget Line Width": 2.0,
     "Widget Fill Fade": 0.4,
 }
+
 
 HEX = re.compile(r"^[0-9a-fA-F]{6,8}$")
 

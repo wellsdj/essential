@@ -260,7 +260,7 @@ FullInterface::~FullInterface() {
 }
 
 void FullInterface::paintBackground(Graphics& g) {
-  g.fillAll(findColour(Skin::kBackground, true));
+  fillBackgroundRegion(g, g.getClipBounds());
   paintChildrenShadows(g);
 
   if (effects_interface_ == nullptr)
@@ -316,6 +316,19 @@ void FullInterface::loggedIn() {
 #endif
 }
 
+void FullInterface::fillBackgroundRegion(Graphics& g, Rectangle<int> region) {
+  if (marble_scaled_.isValid()) {
+    g.drawImage(marble_scaled_,
+                region.getX(), region.getY(), region.getWidth(), region.getHeight(),
+                region.getX(), region.getY(), region.getWidth(), region.getHeight());
+  }
+  else {
+    // A decode failure degrades to the old flat fill rather than a black window.
+    g.setColour(findColour(Skin::kBackground, true));
+    g.fillRect(region);
+  }
+}
+
 void FullInterface::repaintChildBackground(SynthSection* child) {
   if (!background_image_.isValid() || setting_all_values_)
     return; 
@@ -342,8 +355,7 @@ void FullInterface::repaintSynthesisSection() {
   background_.lock();
   Graphics g(background_image_);
   int padding = findValue(Skin::kPadding);
-  g.setColour(findColour(Skin::kBackground, true));
-  g.fillRect(synthesis_interface_->getBounds().expanded(padding));
+  fillBackgroundRegion(g, synthesis_interface_->getBounds().expanded(padding));
   paintChildShadow(g, synthesis_interface_.get());
   paintChildBackground(g, synthesis_interface_.get());
 
@@ -372,6 +384,22 @@ void FullInterface::redoBackground() {
 
   background_.lock();
   background_image_ = Image(Image::RGB, width, height, true);
+
+  // Scale the marble once per background size. Re-resampling a multi-megapixel
+  // slab on every partial repaint would stall the GL lock; fillDestination
+  // preserves its aspect and crops, so the veins never stretch.
+  if (marble_scaled_.getWidth() != width || marble_scaled_.getHeight() != height) {
+    Image slab = ImageCache::getFromMemory(BinaryData::marble_jpg, BinaryData::marble_jpgSize);
+    if (slab.isValid()) {
+      marble_scaled_ = Image(Image::RGB, width, height, false);
+      Graphics slab_graphics(marble_scaled_);
+      slab_graphics.setImageResamplingQuality(Graphics::highResamplingQuality);
+      slab_graphics.drawImageWithin(slab, 0, 0, width, height,
+                                    RectanglePlacement::centred | RectanglePlacement::fillDestination);
+      ImageCache::releaseUnusedImages();
+    }
+  }
+
   Graphics g(background_image_);
   paintBackground(g);
 

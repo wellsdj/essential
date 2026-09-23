@@ -81,6 +81,16 @@ so no multi-frame filmstrip is needed. The rotating pointer remains the existing
 GPU thumb, and the dial costs nothing per frame: it is baked into the window's
 background image alongside the rest of the static interface.
 
+## Marble chassis and light theme (2026-09-23)
+
+Cosmetic; the synthesis engine remains untouched.
+
+| File | Change |
+| --- | --- |
+| `src/interface/editor_sections/full_interface.cpp/.h` | the window is backed by the generated marble slab instead of a flat fill. `fillBackgroundRegion` is the single path for painting the chassis, and the partial repaints that previously flat-filled `Skin::kBackground` go through it — otherwise a repaint punches a plain rectangle through the stone. The slab is scaled once per background size and cached, since re-resampling it inside a partial repaint would stall the GL lock. |
+| `tools/make-skin.py` | regenerated for a light instrument: pale frosted-stone panels, dark type, and displays left dark so luminous traces still read against them. The accent moved from an electric cyan to a deeper azure, which does not vibrate against pale stone. A stale duplicate `GLOBAL` block was also removed — it was shadowing the live one, so palette edits silently did nothing. |
+| `default.vitalskin` | regenerated from the above. |
+
 ## What was deliberately NOT changed
 
 * Every copyright header. They stay exactly as Matt Tytel wrote them.

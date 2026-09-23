@@ -221,21 +221,26 @@ def render_marble(width=2048, height=1200, seed=0xCA22A2A):
     theta = math.radians(26.0)
     axis = wx * math.cos(theta) + wy * math.sin(theta)
 
-    def veins(scale, power, turb_octaves, turbulence=2.4):
-        v = axis * scale + turbulence * fbm(rng, shape, 0.006, turb_octaves)
-        return (1.0 - np.abs(np.sin(math.pi * v))) ** power
+    def veins(scale, power, turb_octaves, turbulence):
+        """
+        Classic sine-turbulence marble. The directional term must DOMINATE the
+        turbulence: let turbulence win and the bands close into contour loops
+        that read as clouds, not veins. Carrara's veins run, wander and branch.
+        """
+        v = axis * scale + turbulence * (fbm(rng, shape, 0.005, turb_octaves) - 0.5)
+        return np.abs(np.sin(math.pi * v)) ** power
 
-    primary = blur(veins(1.4, 14, 6), 3.0)
-    hairline = veins(5.0, 44, 5)
-    dust = veins(13.0, 70, 4)
+    primary = blur(veins(6.0, 10, 6, 1.5), 3.5)
+    hairline = veins(17.0, 26, 5, 1.1)
+    dust = veins(41.0, 48, 4, 0.8)
 
     # Vein families with clean white fields between them. Uniform density is
     # the other big procedural tell — real Carrara is mostly white.
-    cluster_a = fbm(rng, shape, 0.0025, 3) ** 1.8
-    cluster_b = fbm(rng, shape, 0.0035, 3) ** 1.6
-    primary *= cluster_a
-    hairline *= cluster_b * 0.35
-    dust *= 0.12
+    cluster_a = fbm(rng, shape, 0.0018, 3) ** 2.4
+    cluster_b = fbm(rng, shape, 0.0030, 3) ** 2.2
+    primary *= (0.10 + 0.90 * cluster_a) ** 1.5
+    hairline *= (cluster_b ** 2.2) * 0.30
+    dust *= 0.10
 
     # every real vein carries a diffuse mineral halo
     halo = np.clip(blur(primary, 9.0) - primary, 0.0, 1.0) * 0.25
@@ -252,8 +257,8 @@ def render_marble(width=2048, height=1200, seed=0xCA22A2A):
 
     # grey with a faint green cast, never blue-grey: blue-grey veining is the
     # look that reads as fake marble
-    vein_colour = np.array([0.54, 0.56, 0.55], dtype=np.float32)
-    amount = np.clip(primary + hairline + dust, 0.0, 1.0)
+    vein_colour = np.array([0.47, 0.49, 0.48], dtype=np.float32)
+    amount = np.clip(primary * 0.52 + hairline * 0.26 + dust * 0.12, 0.0, 1.0)
     out = field * (1.0 - amount[..., None]) + vein_colour[None, None, :] * amount[..., None]
     out += halo[..., None] * np.array([0.02, 0.015, 0.008], dtype=np.float32)
 

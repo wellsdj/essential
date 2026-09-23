@@ -73,6 +73,13 @@ class FullInterface : public SynthSection, public AuthenticationSection::Listene
     void copySkinValues(const Skin& skin);
     void reloadSkin(const Skin& skin);
 
+    /**
+     * Paints the marble chassis into one region. Every path that used to flat
+     * fill Skin::kBackground goes through here, otherwise a partial repaint
+     * punches a plain rectangle through the stone.
+     */
+    void fillBackgroundRegion(Graphics& g, Rectangle<int> region);
+
     void repaintChildBackground(SynthSection* child);
     void repaintSynthesisSection();
     void repaintOpenGlBackground(OpenGlComponent* component);
@@ -218,6 +225,7 @@ class FullInterface : public SynthSection, public AuthenticationSection::Listene
     std::unique_ptr<Shaders> shaders_;
     OpenGlWrapper open_gl_;
     Image background_image_;
+    Image marble_scaled_;
     OpenGlBackground background_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FullInterface)
