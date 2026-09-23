@@ -80,6 +80,9 @@ class FullInterface : public SynthSection, public AuthenticationSection::Listene
      */
     void fillBackgroundRegion(Graphics& g, Rectangle<int> region);
 
+    /** Paints a wood panel into one region, clipped to the body rounding. */
+    void fillWoodPanel(Graphics& g, Rectangle<int> bounds);
+
     void repaintChildBackground(SynthSection* child);
     void repaintSynthesisSection();
     void repaintOpenGlBackground(OpenGlComponent* component);
@@ -226,6 +229,7 @@ class FullInterface : public SynthSection, public AuthenticationSection::Listene
     OpenGlWrapper open_gl_;
     Image background_image_;
     Image marble_scaled_;
+    Image wood_slab_;
     OpenGlBackground background_;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FullInterface)

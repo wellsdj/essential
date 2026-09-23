@@ -58,6 +58,12 @@ void OpenGlSlider::setSliderDisplayValues() {
   else if (isRotaryQuad()) {
     float thickness = findValue(Skin::kKnobArcThickness);
     float size = findValue(Skin::kKnobArcSize) * getKnobSizeScale() + thickness;
+    // The quad is sized in pixels and then normalised, so an arc larger than
+    // its own cell simply spills over the neighbouring knobs. In the narrow
+    // filter and oscillator columns the cells are much tighter than the skin's
+    // nominal arc size, so clamp to what the component actually has.
+    float available = std::min(getWidth(), getHeight()) - 1.0f;
+    size = std::min(size, available);
     float offset = findValue(Skin::kKnobOffset);
     float radius_x = (size + 0.5f) / getWidth();
     float center_y = 2.0f * offset / getHeight();
@@ -658,7 +664,10 @@ void SynthSlider::drawRotaryShadow(Graphics &g) {
     // is baked into the window's background image, so it costs nothing per
     // frame. Only the indicator moves, and that is the shader's thumb.
     int metal_diameter = juce::roundToInt(2.0f * body_radius);
-    int image_size = juce::roundToInt(metal_diameter / kDialMetalFraction);
+    // Same clamp as the arc: the dial carries its contact shadow outside the
+    // metal, so an unclamped image overlaps the knobs either side of it.
+    int image_size = std::min(juce::roundToInt(metal_diameter / kDialMetalFraction),
+                              std::min(getWidth(), getHeight()));
     const Image& dial = dialImage(image_size);
 
     if (dial.isValid()) {

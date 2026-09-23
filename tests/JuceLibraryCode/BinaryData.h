@@ -93,7 +93,10 @@ namespace BinaryData
     const int            dial_pngSize = 83764;
 
     extern const char*   marble_jpg;
-    const int            marble_jpgSize = 44966;
+    const int            marble_jpgSize = 201755;
+
+    extern const char*   wood_jpg;
+    const int            wood_jpgSize = 338351;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
     const int namedResourceListSize = 27;

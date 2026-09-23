@@ -266,6 +266,18 @@ void FullInterface::paintBackground(Graphics& g) {
   if (effects_interface_ == nullptr)
     return;
 
+  // Wood panels, like the end cheeks and fascia of a vintage keyboard
+  // instrument: the macro column down the left, and the strip of global
+  // controls along the bottom.
+  int voice_padding = findValue(Skin::kLargePadding);
+  if (extra_mod_section_)
+    fillWoodPanel(g, extra_mod_section_->getBounds().expanded(voice_padding / 2));
+  if (voice_section_ && portamento_section_) {
+    fillWoodPanel(g, voice_section_->getBounds()
+                         .getUnion(portamento_section_->getBounds())
+                         .expanded(voice_padding / 2));
+  }
+
   int padding = getPadding();
   int bar_width = 6 * padding;
   g.setColour(header_->findColour(Skin::kBody, true));
@@ -329,12 +341,41 @@ void FullInterface::fillBackgroundRegion(Graphics& g, Rectangle<int> region) {
   }
 }
 
+void FullInterface::fillWoodPanel(Graphics& g, Rectangle<int> bounds) {
+  if (!wood_slab_.isValid() || bounds.isEmpty())
+    return;
+
+  Path rounded;
+  rounded.addRoundedRectangle(bounds.toFloat(), findValue(Skin::kBodyRounding));
+  g.saveState();
+  g.reduceClipRegion(rounded);
+  g.setImageResamplingQuality(Graphics::mediumResamplingQuality);
+  g.drawImageWithin(wood_slab_, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(),
+                    RectanglePlacement::centred | RectanglePlacement::fillDestination);
+  g.restoreState();
+}
+
 void FullInterface::repaintChildBackground(SynthSection* child) {
   if (!background_image_.isValid() || setting_all_values_)
     return; 
 
+  // Upstream escalated any synthesis child to repainting the whole strip,
+  // because the oscillators were stacked and shared overlapping shadow
+  // regions. In the column layout the sources are disjoint, so repainting one
+  // column is both correct and far cheaper: the strip is now the full window
+  // width, and re-rasterising all six columns to toggle one of them was the
+  // main cost of switching the noise source on and off.
   if (child->getParentComponent() == synthesis_interface_.get()) {
-    repaintSynthesisSection();
+    background_.lock();
+    Graphics g(background_image_);
+    // getLocalArea resolves any descendant, so the column is addressed
+    // directly rather than by repainting its parent.
+    Rectangle<int> area = getLocalArea(child, child->getLocalBounds());
+    fillBackgroundRegion(g, area.expanded(child->getComponentShadowWidth()));
+    paintChildShadow(g, child);
+    paintChildBackground(g, child);
+    background_.updateBackgroundImage(background_image_);
+    background_.unlock();
     return;
   }
 
@@ -343,6 +384,11 @@ void FullInterface::repaintChildBackground(SynthSection* child) {
 
   background_.lock();
   Graphics g(background_image_);
+  // Restore the chassis under the child and its shadow first. Without this
+  // each repaint lays another shadow over the previous one and the edges
+  // creep darker every time a section is toggled.
+  fillBackgroundRegion(g, child->getBounds().expanded(child->getComponentShadowWidth()));
+  paintChildShadow(g, child);
   paintChildBackground(g, child);
   background_.updateBackgroundImage(background_image_);
   background_.unlock();
@@ -399,6 +445,9 @@ void FullInterface::redoBackground() {
       ImageCache::releaseUnusedImages();
     }
   }
+
+  if (!wood_slab_.isValid())
+    wood_slab_ = ImageCache::getFromMemory(BinaryData::wood_jpg, BinaryData::wood_jpgSize);
 
   Graphics g(background_image_);
   paintBackground(g);

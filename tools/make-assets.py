@@ -202,74 +202,30 @@ def render_dial(size=512, supersample=4, seed=0xD1A1):
     return img.resize((size, size), Image.LANCZOS)
 
 
-# ---------------------------------------------------------------- marble ---
+# ------------------------------------------------------- supplied slabs ---
+#
+# The marble and wood are photographs supplied by the project owner, kept in
+# assets/source/ so the processing below is reproducible. Only the dial is
+# generated. Everything here is resize, crop and compression - no invention.
 
-def render_marble(width=2048, height=1200, seed=0xCA22A2A):
-    rng = np.random.default_rng(seed)
-    shape = (height, width)
+def _fit(img, width, height):
+    """Scale to cover the target, then centre-crop. Never distorts the grain."""
+    scale = max(width / img.width, height / img.height)
+    resized = img.resize((max(1, round(img.width * scale)),
+                          max(1, round(img.height * scale))), Image.LANCZOS)
+    left = (resized.width - width) // 2
+    top = (resized.height - height) // 2
+    return resized.crop((left, top, left + width, top + height))
 
-    ay = (np.arange(height, dtype=np.float32) / height)
-    ax = (np.arange(width, dtype=np.float32) / width)
-    gx, gy = np.meshgrid(ax, ay)
 
-    # Domain warp first. Without it every vein is a parallel stripe, which is
-    # the clearest tell of procedural marble.
-    warp = 0.09
-    wx = gx + warp * (fbm(rng, shape, 0.004, 5) - 0.5)
-    wy = gy + warp * (fbm(rng, shape, 0.004, 5) - 0.5)
+def prepare_marble(width=2048, height=1200):
+    src = Image.open(ASSETS / "source" / "marble.png").convert("RGB")
+    return _fit(src, width, height)
 
-    theta = math.radians(26.0)
-    axis = wx * math.cos(theta) + wy * math.sin(theta)
 
-    def veins(scale, power, turb_octaves, turbulence):
-        """
-        Classic sine-turbulence marble. The directional term must DOMINATE the
-        turbulence: let turbulence win and the bands close into contour loops
-        that read as clouds, not veins. Carrara's veins run, wander and branch.
-        """
-        v = axis * scale + turbulence * (fbm(rng, shape, 0.005, turb_octaves) - 0.5)
-        return np.abs(np.sin(math.pi * v)) ** power
-
-    primary = blur(veins(6.0, 10, 6, 1.5), 3.5)
-    hairline = veins(17.0, 26, 5, 1.1)
-    dust = veins(41.0, 48, 4, 0.8)
-
-    # Vein families with clean white fields between them. Uniform density is
-    # the other big procedural tell — real Carrara is mostly white.
-    cluster_a = fbm(rng, shape, 0.0018, 3) ** 2.4
-    cluster_b = fbm(rng, shape, 0.0030, 3) ** 2.2
-    primary *= (0.10 + 0.90 * cluster_a) ** 1.5
-    hairline *= (cluster_b ** 2.2) * 0.30
-    dust *= 0.10
-
-    # every real vein carries a diffuse mineral halo
-    halo = np.clip(blur(primary, 9.0) - primary, 0.0, 1.0) * 0.25
-
-    base_mix = fbm(rng, shape, 0.003, 2)
-    light = np.array([0.973, 0.965, 0.953], dtype=np.float32)
-    dark = np.array([0.929, 0.921, 0.906], dtype=np.float32)
-    field = light[None, None, :] * base_mix[..., None] + dark[None, None, :] * (1.0 - base_mix[..., None])
-
-    # Uneven lighting: brightest slightly up-left, ~4.5% falloff to the far
-    # corners. A perfectly evenly lit slab does not exist.
-    fall = 1.0 - 0.045 * (((gx - 0.42) ** 2) * 1.1 + ((gy - 0.38) ** 2) * 1.4) / 0.35
-    field *= np.clip(fall, 0.0, 1.2)[..., None]
-
-    # grey with a faint green cast, never blue-grey: blue-grey veining is the
-    # look that reads as fake marble
-    vein_colour = np.array([0.47, 0.49, 0.48], dtype=np.float32)
-    amount = np.clip(primary * 0.52 + hairline * 0.26 + dust * 0.12, 0.0, 1.0)
-    out = field * (1.0 - amount[..., None]) + vein_colour[None, None, :] * amount[..., None]
-    out += halo[..., None] * np.array([0.02, 0.015, 0.008], dtype=np.float32)
-
-    # polish sheen along the slab axis
-    streak = blur(rng.random(shape).astype(np.float32), 24.0)
-    out *= (1.0 + 0.006 * (streak - 0.5))[..., None]
-
-    # grain, which doubles as dither and kills JPEG banding on the smooth field
-    out += rng.normal(0.0, 1.3 / 255.0, size=out.shape).astype(np.float32)
-
-    return Image.fromarray((np.clip(out, 0, 1) * 255.0 + 0.5).astype(np.uint8), mode="RGB")
+def prepare_wood(width=2048, height=683):
+    src = Image.open(ASSETS / "source" / "wood.png").convert("RGB")
+    return _fit(src, width, height)
 
 
 # ------------------------------------------------------------------ main ---
@@ -278,10 +234,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dial", action="store_true")
     parser.add_argument("--marble", action="store_true")
+    parser.add_argument("--wood", action="store_true")
     parser.add_argument("--check", action="store_true", help="report sizes, write nothing")
     args = parser.parse_args()
 
-    both = not (args.dial or args.marble)
+    both = not (args.dial or args.marble or args.wood)
     ASSETS.mkdir(exist_ok=True)
 
     if args.dial or both:
@@ -295,14 +252,22 @@ def main():
             print("  WARNING: dial is larger than budget (140 KB)", file=sys.stderr)
 
     if args.marble or both:
-        marble = render_marble()
+        marble = prepare_marble()
         path = ASSETS / "marble.jpg"
         if not args.check:
             marble.save(path, quality=82, optimize=True, subsampling=2, progressive=False)
         size = path.stat().st_size if path.exists() else 0
         print(f"marble {marble.size[0]}x{marble.size[1]} RGB   {size / 1024:.0f} KB  -> {path.relative_to(ROOT)}")
-        if size > 380 * 1024:
-            print("  WARNING: marble is larger than budget (380 KB)", file=sys.stderr)
+        if size > 520 * 1024:
+            print("  WARNING: marble is larger than budget (520 KB)", file=sys.stderr)
+
+    if args.wood or both:
+        wood = prepare_wood()
+        path = ASSETS / "wood.jpg"
+        if not args.check:
+            wood.save(path, quality=86, optimize=True, subsampling=2, progressive=False)
+        size = path.stat().st_size if path.exists() else 0
+        print(f"wood   {wood.size[0]}x{wood.size[1]} RGB   {size / 1024:.0f} KB  -> {path.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

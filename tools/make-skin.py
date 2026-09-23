@@ -61,14 +61,36 @@ PALETTE = {
 
 # Applied after the palette so a section can opt out of a global remap.
 SECTIONS = {
-    # the palette darkens 4c4f52/262a2e, which are this section's key faces,
-    # so the keyboard states are set explicitly to keep the keys readable
+    # These two sit on the wood fascia, so they contribute no body of their
+    # own and their type goes light — dark ink on walnut is unreadable.
     "Keyboard": {
-        "Widget Secondary 1": "ffc2d2e0",   # natural keys
-        "Widget Secondary 2": "ff0d141c",   # sharps
-        "Widget Accent 1": "ff5a6f84",      # separators
+        "Body": "00000000",
+        "Body Heading Background": "00000000",
+        "Body Text": "fff3ece1",
+        "Heading Text": "fffbf7f0",
+        "Label Background": "4d1e1610",
+        "Text Component Background": "662a1f16",
+        "Text Component Text": "fff6f0e7",
+        "Linear Slider Unselected": "80241a12",
+        "Rotary Arc Unselected": "99785c42",
+        "Widget Background": "cc17110c",
+        # the key faces themselves, which this override also governs
+        "Widget Secondary 1": "fff2efe9",   # naturals
+        "Widget Secondary 2": "ff17110c",   # sharps
+        "Widget Accent 1": "ff6b5946",      # separators
         "Widget Accent 2": "28ffffff",
-        "Widget Primary 1": "ff4fb6ff",     # pressed
+        "Widget Primary 1": "ff2f86e0",     # pressed
+    },
+    "Macro": {
+        "Body": "00000000",
+        "Body Heading Background": "00000000",
+        "Body Text": "fff3ece1",
+        "Heading Text": "fffbf7f0",
+        "Label Background": "4d1e1610",
+        "Text Component Background": "662a1f16",
+        "Text Component Text": "fff6f0e7",
+        "Linear Slider Unselected": "80241a12",
+        "Rotary Arc Unselected": "99785c42",
     },
 }
 
@@ -83,7 +105,7 @@ GLOBAL = {
     # Panels are pale frosted stone, slightly translucent so the slab reads
     # through them. JUCE composites this on the CPU into the background image,
     # so translucency needs no GL change.
-    "Body": "f0f7f5f2",
+    "Body": "fff7f5f2",
     "Body Heading Background": "ffe9e5e0",
     "Border": "26000000",
 
@@ -134,8 +156,9 @@ GLOBAL = {
     "Overlay Screen": "59000000",
 
     # --- geometry -----------------------------------------------------------
-    "Knob Body Size": 32.0,      # the chrome collar needs room to read
-    "Knob Arc Size": 41.0,       # keep the value ring clear of the collar
+    "Knob Body Size": 29.0,      # the chrome collar needs room, but not at the
+                                 # cost of crowding the next knob along
+    "Knob Arc Size": 37.0,       # keep the value ring clear of the collar
     "Knob Arc Thickness": 2.0,
     "Knob Handle Length": 0.42,  # a short witness line, not a full spoke
     "Knob Shadow Width": 0.0,    # the dial carries its own contact shadow

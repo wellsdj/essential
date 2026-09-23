@@ -91,6 +91,26 @@ Cosmetic; the synthesis engine remains untouched.
 | `tools/make-skin.py` | regenerated for a light instrument: pale frosted-stone panels, dark type, and displays left dark so luminous traces still read against them. The accent moved from an electric cyan to a deeper azure, which does not vibrate against pale stone. A stale duplicate `GLOBAL` block was also removed — it was shadowing the live one, so palette edits silently did nothing. |
 | `default.vitalskin` | regenerated from the above. |
 
+## Supplied slabs, wood fascia, repaint cost (2026-09-23)
+
+Cosmetic and performance; the synthesis engine remains untouched.
+
+| File | Change |
+| --- | --- |
+| `assets/source/marble.png`, `assets/source/wood.png` | **new** — supplied by the project owner, kept in-tree so the processing is reproducible. |
+| `tools/make-assets.py` | the marble is no longer generated; both slabs are scaled and centre-cropped from the supplied sources, so the grain is never distorted. Only the dial is still rendered. |
+| `src/interface/editor_components/synth_slider.cpp` | the arc quad and the dial image are clamped to the knob's own cell. The quad is sized in pixels and then normalised, so an arc larger than its cell simply spilled over the knobs either side — which is what was overlapping. |
+| `src/interface/editor_sections/full_interface.cpp/.h` | wood fascia behind the macro column and the global control strip, clipped to the body rounding; `repaintChildBackground` restores the chassis under a child and its shadow before repainting, so toggling a section no longer lays shadow over shadow. |
+| `tools/make-skin.py` | panel bodies are opaque again — translucency meant every panel fill was an alpha composite over the slab and every partial repaint composited again. The macro and keyboard sections contribute no body so the wood reads through them, with light type since dark ink on walnut is unreadable. A duplicate `"Keyboard"` key in the section map was also removed: two identical keys in one dict literal means the later silently wins, so the fascia styling never applied. |
+
+### Repaint cost
+
+Upstream escalated any synthesis child to repainting the whole strip, because
+its oscillators were stacked and shared overlapping shadow regions. This fork's
+column layout made that strip the full window width, so toggling one source
+re-rasterised all six columns. The sources are disjoint now, so only the
+affected column is repainted.
+
 ## What was deliberately NOT changed
 
 * Every copyright header. They stay exactly as Matt Tytel wrote them.

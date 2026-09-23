@@ -21,6 +21,7 @@ TARGETS = ["standalone", "plugin", "tests"]
 RESOURCES = [
     ("dial_png", ROOT / "assets" / "dial.png"),
     ("marble_jpg", ROOT / "assets" / "marble.jpg"),
+    ("wood_jpg", ROOT / "assets" / "wood.jpg"),
 ]
 
 
