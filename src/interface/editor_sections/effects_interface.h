@@ -73,6 +73,8 @@ class EffectsInterface : public SynthSection, public DragDropEffectOrder::Listen
     void resized() override;
     void redoBackgroundImage();
 
+    void buttonClicked(Button* clicked_button) override;
+    void addEffect(int effect_index);
     void orderChanged(DragDropEffectOrder* order) override;
     void effectEnabledChanged(int order_index, bool enabled) override;
 
@@ -111,6 +113,7 @@ class EffectsInterface : public SynthSection, public DragDropEffectOrder::Listen
     std::unique_ptr<PhaserSection> phaser_section_;
     std::unique_ptr<ReverbSection> reverb_section_;
     std::unique_ptr<FilterSection> filter_section_;
+    std::unique_ptr<OpenGlToggleButton> add_effect_button_;
     std::unique_ptr<DragDropEffectOrder> effect_order_;
     std::unique_ptr<OpenGlScrollBar> scroll_bar_;
 

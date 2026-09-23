@@ -45,18 +45,18 @@ PALETTE = {
     "ff8180": "c96470",
     "ea1616": "cc2b3b",   # modulation drag
     # neutral greys, cooled to sit on the bluer chassis
-    "848789": "6d7681",
-    "848686": "7c848e",
-    "939699": "525b66",
-    "aaacad": "434c57",
-    "4c4f52": "d5d1cb",
-    "262a2e": "e6e2dc",
-    "2c3033": "f1eeea",
-    "3e4245": "e9e5e0",
+    "848789": "8d99a7",
+    "848686": "6a7683",
+    "939699": "c3ccd6",
+    "aaacad": "d2dbe4",
+    "4c4f52": "2a3038",
+    "262a2e": "12161b",
+    "2c3033": "171c22",
+    "3e4245": "1a1f25",
     "1d2125": "11161c",
-    "606265": "9aa3ae",
-    "d3d6d6": "2b3138",
-    "dfdfdf": "14181d",
+    "606265": "5a6675",
+    "d3d6d6": "e3eaf2",
+    "dfdfdf": "f5f8fc",
 }
 
 # Applied after the palette so a section can opt out of a global remap.
@@ -80,117 +80,6 @@ SECTIONS = {
         "Widget Accent 1": "ff6b5946",      # separators
         "Widget Accent 2": "28ffffff",
         "Widget Primary 1": "ff2f86e0",     # pressed
-    },
-    # The effect panels sit on the dark slab, so their veil and type invert.
-    "All Effects": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Chorus": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Compressor": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Delay": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Distortion": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Equalizer": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Effects Filter": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Flanger": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Phaser": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
-    },
-    "Reverb": {
-        "Body": "bf0d0f12",
-        "Body Heading Background": "d9121519",
-        "Body Text": "ffe8eef5",
-        "Heading Text": "fff6f9fc",
-        "Label Background": "59060809",
-        "Text Component Background": "8c0a0d10",
-        "Text Component Text": "fff2f6fa",
-        "Linear Slider Unselected": "8c1b2027",
-        "Rotary Arc Unselected": "99566171",
     },
     "Macro": {
         "Body": "00000000",
@@ -216,13 +105,13 @@ GLOBAL = {
     # Panels are pale frosted stone, slightly translucent so the slab reads
     # through them. JUCE composites this on the CPU into the background image,
     # so translucency needs no GL change.
-    "Body": "c7fdfcfa",
-    "Body Heading Background": "a6efece6",
+    "Body": "c40c0e11",
+    "Body Heading Background": "d9111418",
     "Border": "26000000",
 
     # --- type: dark on stone ------------------------------------------------
-    "Body Text": "ff2b3138",
-    "Heading Text": "ff14181d",
+    "Body Text": "ffe3eaf2",
+    "Heading Text": "fff5f8fc",
 
     # --- displays stay dark -------------------------------------------------
     # Wavetables, envelopes and LFO curves are luminous traces; they need a
@@ -231,39 +120,39 @@ GLOBAL = {
     "Widget Center Line": "ff8e9aa6",
 
     # --- interior controls, all opaque -------------------------------------
-    "Popup Background": "fff4f2ef",
-    "Popup Selector Background": "ffe6e2dc",
-    "Text Component Background": "fff1eeea",
-    "Text Component Text": "ff23282e",
-    "Text Editor Background": "fff1eeea",
-    "Modulation Button Unselected": "ffe6e2dc",
-    "Modulation Button Selected": "ffd3dae2",
-    "Linear Slider Unselected": "ffd5d1cb",
-    "Linear Slider": "ff6d7681",
-    "Label Background": "ffe9e5e0",
-    "Preset Text": "ff1b2026",
+    "Popup Background": "fb0f1216",
+    "Popup Selector Background": "ff1b2027",
+    "Text Component Background": "e6141920",
+    "Text Component Text": "fff1f5f9",
+    "Text Editor Background": "e6141920",
+    "Modulation Button Unselected": "d9161b21",
+    "Modulation Button Selected": "f2222a33",
+    "Linear Slider Unselected": "cc1a1f26",
+    "Linear Slider": "ff9fb0c2",
+    "Label Background": "8c0b0e11",
+    "Preset Text": "fff2f6fa",
 
     # --- knobs --------------------------------------------------------------
     # Rotary Body is only the fallback colour; the rendered dial covers it.
     "Rotary Body": "ff16191d",
     "Rotary Body Border": "ff08090b",
-    "Rotary Arc Unselected": "ffc6c9cd",
-    "Rotary Arc Unselected Disabled": "ffdcdedf",
-    "Rotary Hand": "fff4f8fc",
+    "Rotary Arc Unselected": "ff444e5a",
+    "Rotary Arc Unselected Disabled": "ff2a3038",
+    "Rotary Hand": "ff4d9fe8",
 
     # --- chrome, buttons, shadows ------------------------------------------
-    "Icon Button Off": "ff6d7681",
-    "Icon Button Off Hover": "ff434c57",
-    "Icon Selector Icon": "ff6d7681",
-    "Power Button Off": "ff9aa3ae",
-    "UI Button": "ff6d7681",
-    "UI Button Hover": "ff525b66",
-    "UI Button Press": "ff3a424c",
-    "UI Button Text": "fff7f9fb",
+    "Icon Button Off": "ff8d99a7",
+    "Icon Button Off Hover": "ffd2dbe4",
+    "Icon Selector Icon": "ff8d99a7",
+    "Power Button Off": "ff5a6675",
+    "UI Button": "ff8d99a7",
+    "UI Button Hover": "ffc3ccd6",
+    "UI Button Press": "ff5a6675",
+    "UI Button Text": "ff0d1014",
     # Shadows on a light ground want to be soft and short, not the deep pools
     # a dark chassis could carry.
-    "Shadow": "38161b21",
-    "Lighten Screen": "14ffffff",
+    "Shadow": "73040609",
+    "Lighten Screen": "1fffffff",
     "Overlay Screen": "59000000",
 
     # --- geometry -----------------------------------------------------------
@@ -271,7 +160,8 @@ GLOBAL = {
                                  # cost of crowding the next knob along
     "Knob Arc Size": 37.0,       # keep the value ring clear of the collar
     "Knob Arc Thickness": 2.0,
-    "Knob Handle Length": 0.42,  # a short witness line, not a full spoke
+    "Knob Handle Length": 0.78,  # reaches in across the cap so the dial is
+                                 # never a blank disc
     "Knob Shadow Width": 0.0,    # the dial carries its own contact shadow
     "Body Rounding": 4.0,
     "Widget Rounded Corner": 4.0,

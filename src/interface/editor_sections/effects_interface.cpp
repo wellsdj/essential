@@ -16,6 +16,9 @@
 
 #include "effects_interface.h"
 
+#include "synth_strings.h"
+#include "synth_button.h"
+
 #include "chorus_section.h"
 #include "compressor_section.h"
 #include "delay_section.h"
@@ -71,6 +74,13 @@ EffectsInterface::EffectsInterface(const vital::output_map& mono_modulations) : 
 
   filter_section_ = std::make_unique<FilterSection>("fx", mono_modulations);
   container_->addSubSection(filter_section_.get());
+
+  add_effect_button_ = std::make_unique<OpenGlToggleButton>("add_effect");
+  add_effect_button_->setText("+   ADD EFFECT");
+  add_effect_button_->setUiButton(true);
+  add_effect_button_->addListener(this);
+  addAndMakeVisible(add_effect_button_.get());
+  addOpenGlComponent(add_effect_button_->getGlComponent());
 
   effect_order_ = std::make_unique<DragDropEffectOrder>("effect_chain_order");
   addSubSection(effect_order_.get());
@@ -139,7 +149,10 @@ void EffectsInterface::resized() {
   ScopedLock lock(open_gl_critical_section_);
 
   int order_width = getWidth() * kEffectOrderWidthPercent;
-  effect_order_->setBounds(0, 0, order_width, getHeight());
+  int add_height = findValue(Skin::kTextButtonHeight) + 2 * findValue(Skin::kWidgetMargin);
+  add_effect_button_->setBounds(0, 0, order_width, add_height);
+  effect_order_->setBounds(0, add_height + findValue(Skin::kWidgetMargin),
+                           order_width, getHeight() - add_height - findValue(Skin::kWidgetMargin));
   effect_order_->setSizeRatio(size_ratio_);
   int large_padding = findValue(Skin::kLargePadding);
   int shadow_width = getComponentShadowWidth();
@@ -152,6 +165,39 @@ void EffectsInterface::resized() {
   scroll_bar_->setColor(findColour(Skin::kLightenScreen, true));
 
   SynthSection::resized();
+}
+
+void EffectsInterface::buttonClicked(Button* clicked_button) {
+  if (clicked_button != add_effect_button_.get()) {
+    SynthSection::buttonClicked(clicked_button);
+    return;
+  }
+
+  // Offer only what is not already in the chain, so the menu reads as a list
+  // of effects to add rather than a list of everything with ticks.
+  PopupItems options;
+  for (int i = 0; i < vital::constants::kNumEffects; ++i) {
+    if (!effect_order_->effectEnabled(i))
+      options.addItem(effect_order_->getEffectIndex(i), strings::kEffectOrder[effect_order_->getEffectIndex(i)]);
+  }
+
+  if (options.items.empty())
+    options.addItem(-1, "All effects are in the chain");
+
+  Point<int> position(add_effect_button_->getX(), add_effect_button_->getBottom());
+  showPopupSelector(this, position, options, [=](int selection) { addEffect(selection); });
+}
+
+void EffectsInterface::addEffect(int effect_index) {
+  if (effect_index < 0 || effect_index >= vital::constants::kNumEffects)
+    return;
+
+  ScopedLock lock(open_gl_critical_section_);
+  // Enabling through the section's own activator keeps the parameter, the
+  // order list and the rack in step; the rack already shows only what is on.
+  effects_list_[effect_index]->activator()->setToggleState(true, sendNotification);
+  setEffectPositions();
+  repaintBackground();
 }
 
 void EffectsInterface::orderChanged(DragDropEffectOrder* order) {

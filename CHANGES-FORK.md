@@ -121,6 +121,14 @@ affected column is repainted.
 | `src/interface/editor_sections/popup_browser.cpp` | popup rows were tinted with the accent darkened almost to black, which worked when item text was light; on a light instrument the text is dark, so selected rows became dark-on-dark and unreadable. Rows now take a light wash of the accent. Popups also draw their own background colour rather than inheriting `Skin::kBody` from whichever section opened them, which could be transparent or dark. |
 | `tools/make-skin.py` | `Body` is a translucent veil over the slab rather than an opaque fill; the ten effect sections invert to a dark veil with light type. |
 
+## Dark panels, effect rack, visible indicator (2026-09-23)
+
+| File | Change |
+| --- | --- |
+| `src/interface/editor_sections/synth_section.cpp` | every panel takes the dark slab; the light marble stays the chassis they sit on. |
+| `src/interface/editor_sections/effects_interface.cpp/.h` | an "add effect" button opens a menu of effects not already in the chain; choosing one enables it through the section's own activator, so the parameter, the order list and the rack stay in step. The rack already showed only enabled effects, so an added effect simply appears. |
+| `tools/make-skin.py` | palette inverted for dark panels. The neutral remaps were still carrying light-theme values, so anything a section override routed through them rendered cream on a dark panel. The knob indicator is now the oscillator blue and reaches in across the cap, so a dial is never a blank disc. |
+
 ## What was deliberately NOT changed
 
 * Every copyright header. They stay exactly as Matt Tytel wrote them.

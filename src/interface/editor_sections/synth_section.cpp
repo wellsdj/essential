@@ -189,9 +189,8 @@ void SynthSection::setPanelSlabs(const Image& light, const Image& dark) {
 void SynthSection::paintBody(Graphics& g, Rectangle<int> bounds) {
   float rounding = findValue(Skin::kBodyRounding);
 
-  // The effect sections take the dark slab; everything else the light one.
-  bool dark_panel = skin_override_ >= Skin::kAllEffects && skin_override_ <= Skin::kReverb;
-  const Image& slab = dark_panel ? panel_slab_dark_ : panel_slab_light_;
+  // Panels take the dark slab; the light marble stays the chassis they sit on.
+  const Image& slab = panel_slab_dark_.isValid() ? panel_slab_dark_ : panel_slab_light_;
 
   if (slab.isValid()) {
     // Offset of this section within the painted root, accumulated up the
